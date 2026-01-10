@@ -18,9 +18,7 @@ fn download_audio(url: &str, output_dir: &str) {
             "-o", &format!("{}/%(title)s.%(ext)s", output_dir),
             url,
         ])
-        .spawn()
-        .unwrap()
-        .wait_with_output();
+        .output();
 
     match output {
         Ok(output) => {
