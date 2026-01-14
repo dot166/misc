@@ -37,7 +37,7 @@ fn download_audio(url: &str, output_dir: &str) {
 }
 
 fn main() {
-    let default_output_dir = dirs::home_dir().unwrap_or_else(|| Path::new("/").to_path_buf()).join("Downloads/yt-audio");
+    let default_output_dir = dirs::home_dir().unwrap_or_else(|| Path::new("/").to_path_buf()).join("Downloads/vocaloid");
     let output_dir = default_output_dir.to_string_lossy().to_string();
 
     let mut args = env::args().skip(1);
