@@ -78,13 +78,13 @@ fn download_audio(url: &str, output_dir: &str) {
     match output {
         Ok(output) => {
             if !output.status.success() {
-                eprintln!("Error downloading {}: {}", url, String::from_utf8_lossy(&output.stderr));
+                panic!("Error downloading {}: please check above logs", url);
             } else {
                 println!("Done: {}", url);
             }
         }
         Err(e) => {
-            eprintln!("Failed to execute yt-dlp: {}", e);
+            panic!("Failed to execute yt-dlp: {}", e);
         }
     }
 }
@@ -110,8 +110,7 @@ fn main() {
                             url
                         }
                         Err(e) => {
-                            eprintln!("Failed to resolve VocaDB {}: {}", input, e);
-                            continue;
+                            panic!("Failed to resolve VocaDB {}: {}", input, e);
                         }
                     }
                 } else {
