@@ -192,6 +192,15 @@ fn download_cover(url: &str, path: &str) -> Result<(), String> {
     }
 }
 
+fn safe_filename(s: &str) -> String {
+    s.chars()
+        .map(|c| match c {
+            '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|' => '_',
+            _ => c,
+        })
+        .collect()
+}
+
 fn download_audio(map: HashMap<String, String>, output_dir: &str) {
     println!("Downloading audio from: {}", map.get(&"url".to_string()).unwrap().as_str());
 
@@ -221,6 +230,8 @@ fn download_audio(map: HashMap<String, String>, output_dir: &str) {
     }
     let cover_path = "cover.jpg";
     download_cover(&map["mainPicture"], cover_path).unwrap();
+    let artist = safe_filename(&map["artistString"]);
+    let title = safe_filename(&map["name"]);
     let output2 = Command::new("ffmpeg")
         .args(&[
             "-y",
@@ -236,7 +247,7 @@ fn download_audio(map: HashMap<String, String>, output_dir: &str) {
             "-metadata", "genre=VOCALOID",
             "-metadata:s:v", "title=Album cover",
             "-metadata:s:v", "comment=Cover (front)",
-            &format!("{}/{} - {}.mp3", output_dir, map["artistString"], map["name"]),
+            &format!("{}/{} - {}.mp3", output_dir, artist, title),
         ])
         .spawn()
         .unwrap()
@@ -260,6 +271,7 @@ fn download_audio(map: HashMap<String, String>, output_dir: &str) {
 fn main() {
     let default_output_dir = dirs::home_dir().unwrap_or_else(|| Path::new("/").to_path_buf()).join("Downloads/vocaloid");
     let output_dir = default_output_dir.to_string_lossy().to_string();
+    fs::create_dir_all(&output_dir).unwrap();
 
     let mut args = env::args().skip(1);
 
