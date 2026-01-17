@@ -4,8 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+url = "2"
 dirs = "4.0"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 serde = { version = "1.0", features = ["derive"] }
-
+image = "0.25"
+imageproc = "0.24"
+ab_glyph = "0.2"
 
