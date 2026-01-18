@@ -1,10 +1,17 @@
-use std::{env, fs, process::{Command, exit}};
+use std::fs::File;
+use std::{env, fs, process::Command};
+use std::process::Stdio;
 use std::path::Path;
+use std::path::PathBuf;
 use serde::Deserialize;
 use url::Url;
 use image::{Rgb, RgbImage};
 use imageproc::drawing::draw_text_mut;
 use ab_glyph::{FontArc, PxScale};
+use indicatif::{ProgressBar, ProgressStyle};
+use futures::stream::{self, StreamExt};
+use indicatif::MultiProgress;
+use uuid::Uuid;
 
 #[derive(Debug, Deserialize)]
 struct SongResponse {
@@ -63,14 +70,15 @@ fn extract_id(input: &str) -> Option<String> {
     }
 }
 
-fn get_metadata_for_video(url: String, service: &String) -> Result<SongMetadata, String> {
+async fn get_metadata_for_video(url: String, service: &String) -> Result<SongMetadata, String> {
     let api_url = format!(
         "https://vocadb.net/api/songs/byPv?pvService={}&pvId={}&fields=MainPicture,PVs",
         service,
         extract_id(&url).unwrap()
     );
 
-    let resp = reqwest::blocking::get(&api_url)
+    let resp = reqwest::get(&api_url)
+        .await
         .map_err(|e| format!("HTTP error: {}", e))?;
 
     if !resp.status().is_success() {
@@ -79,6 +87,7 @@ fn get_metadata_for_video(url: String, service: &String) -> Result<SongMetadata,
 
     let song: SongResponse = resp
         .json()
+        .await
         .map_err(|e| format!("JSON parse error: {}", e))?;
 
     Ok(SongMetadata {
@@ -89,13 +98,14 @@ fn get_metadata_for_video(url: String, service: &String) -> Result<SongMetadata,
     })
 }
 
-fn get_metadata_for_vocadb_id(id: &str) -> Result<SongMetadata, String> {
+async fn get_metadata_for_vocadb_id(id: &str) -> Result<SongMetadata, String> {
     let api_url = format!(
         "https://vocadb.net/api/songs/{}?fields=MainPicture,PVs",
         id
     );
 
-    let resp = reqwest::blocking::get(&api_url)
+    let resp = reqwest::get(&api_url)
+        .await
         .map_err(|e| format!("HTTP error: {}", e))?;
 
     if !resp.status().is_success() {
@@ -104,17 +114,10 @@ fn get_metadata_for_vocadb_id(id: &str) -> Result<SongMetadata, String> {
 
     let song: SongResponse = resp
         .json()
+        .await
         .map_err(|e| format!("JSON parse error: {}", e))?;
 
-    let url = match vocadb_id_to_url(&song) {
-        Ok(url) => {
-            println!("Resolved VocaDB {} → {}", id, url);
-            url
-        }
-        Err(e) => {
-            return Err(format!("Failed to resolve VocaDB {}: {}", id, e));
-        }
-    };
+    let url = vocadb_id_to_url(&song)?;
 
     Ok(SongMetadata {
         url,
@@ -155,7 +158,7 @@ fn print_usage() {
     println!("  This uses VocaDB for metadata, even if an ID is not used");
 }
 
-fn generate_fallback_cover(path: &str) -> Result<(), String> {
+fn generate_fallback_cover(path: &PathBuf) -> Result<(), String> {
     let mut img = RgbImage::from_pixel(300, 300, Rgb([255, 0, 255])); // HOT PINK
 
     let font_data = fs::read("Comic_Sans_MS_Bold.ttf")
@@ -183,14 +186,14 @@ fn generate_fallback_cover(path: &str) -> Result<(), String> {
 }
 
 
-fn download_cover(url: &str, path: &str) -> Result<(), String> {
+async fn download_cover(url: &str, path: &PathBuf) -> Result<(), String> {
     if url.starts_with("data:") || url.is_empty() {
         return generate_fallback_cover(path);
     }
 
-    match reqwest::blocking::get(url) {
+    match reqwest::get(url).await {
         Ok(resp) => {
-            let bytes = resp.bytes().map_err(|e| e.to_string())?;
+            let bytes = resp.bytes().await.map_err(|e| e.to_string())?;
             fs::write(path, &bytes).map_err(|e| e.to_string())?;
             Ok(())
         }
@@ -209,45 +212,45 @@ fn safe_filename(s: &str) -> String {
         .collect()
 }
 
-fn download_audio(meta: SongMetadata, output_dir: &str) {
-    println!("Downloading audio from: {}", meta.url);
+fn download_audio(
+    meta: SongMetadata,
+    output_dir: &str,
+    work_dir: &Path,
+) -> Result<(), String> {
+    let song_path = work_dir.join("song.mp3");
+    let cover_path = work_dir.join("cover.jpg");
+    let log_path = work_dir.join("worker.log");
 
-    let output = Command::new("yt-dlp")
+    let log_file = File::create(&log_path)
+        .map_err(|e| format!("Failed to create log file: {}", e))?;
+
+    let status = Command::new("yt-dlp")
         .args(&[
             "-x",
             "--audio-format", "mp3",
             "--audio-quality", "0",
-            "-o", "song.mp3",
+            "-o",
+            song_path.to_str().unwrap(),
             &meta.url,
         ])
-        .spawn()
-        .unwrap()
-        .wait_with_output();
+        .stdout(Stdio::from(log_file.try_clone().unwrap()))
+        .stderr(Stdio::from(log_file.try_clone().unwrap()))
+        .status()
+        .map_err(|e| format!("Failed to run yt-dlp: {}", e))?;
 
-    match output {
-        Ok(output) => {
-            if !output.status.success() {
-                panic!("Error downloading {}: please check above logs", meta.url);
-            } else {
-                println!("Done: {}", meta.url);
-            }
-        }
-        Err(e) => {
-            panic!("Failed to execute yt-dlp: {}", e);
-        }
+    if !status.success() {
+        return Err(format!(
+            "yt-dlp failed for {} (see {})",
+            meta.url,
+            log_path.display()
+        ));
     }
 
-    let cover_path = "cover.jpg";
-    download_cover(&meta.main_picture, cover_path).unwrap();
-
-    let artist = safe_filename(&meta.artist);
-    let title = safe_filename(&meta.name);
-
-    let output2 = Command::new("ffmpeg")
+    let status2 = Command::new("ffmpeg")
         .args(&[
             "-y",
-            "-i", "song.mp3",
-            "-i", "cover.jpg",
+            "-i", song_path.to_str().unwrap(),
+            "-i", cover_path.to_str().unwrap(),
             "-map", "0:a",
             "-map", "1:v",
             "-c", "copy",
@@ -258,83 +261,140 @@ fn download_audio(meta: SongMetadata, output_dir: &str) {
             "-metadata", "genre=VOCALOID",
             "-metadata:s:v", "title=Album cover",
             "-metadata:s:v", "comment=Cover (front)",
-            &format!("{}/{} - {}.mp3", output_dir, artist, title),
+            &format!(
+                "{}/{} - {}.mp3",
+                output_dir,
+                safe_filename(&meta.artist),
+                safe_filename(&meta.name),
+            ),
         ])
-        .spawn()
-        .unwrap()
-        .wait_with_output();
+        .stdout(Stdio::from(log_file.try_clone().unwrap()))
+        .stderr(Stdio::from(log_file))
+        .status()
+        .map_err(|e| format!("Failed to run ffmpeg: {}", e))?;
 
-    match output2 {
-        Ok(output) => {
-            if !output.status.success() {
-                panic!("Error setting metadata using ffmpeg: please check above logs");
-            } else {
-                println!("Done setting metadata using ffmpeg");
-            }
-        }
-        Err(e) => {
-            panic!("Failed to execute ffmpeg: {}", e);
-        }
+    if !status2.success() {
+        return Err(format!(
+            "ffmpeg failed for {} (see {})",
+            meta.name,
+            log_path.display()
+        ));
     }
 
-    fs::remove_file("song.mp3").unwrap();
-    fs::remove_file("cover.jpg").unwrap();
+    Ok(())
 }
 
-fn main() {
-    let default_output_dir = dirs::home_dir().unwrap_or_else(|| Path::new("/").to_path_buf()).join("Downloads/vocaloid");
-    let output_dir = default_output_dir.to_string_lossy().to_string();
-    fs::create_dir_all(&output_dir).unwrap();
+async fn process_song(
+    input: String,
+    output_dir: String,
+    bar: ProgressBar,
+) {
+    let job_dir: PathBuf = std::env::temp_dir()
+        .join(format!("vocaloid_job_{}", Uuid::new_v4()));
 
-    let mut args = env::args().skip(1);
+    fs::create_dir_all(&job_dir).unwrap();
+    bar.set_message("Resolving metadata");
 
-    if let Some(url_file) = args.next() {
-        if let Ok(contents) = fs::read_to_string(&url_file) {
-            for line in contents.lines() {
-                let input = line.trim();
-                if input.is_empty() || input.starts_with("#") {
-                    continue;
-                }
-
-                if input.chars().all(|c| c.is_ascii_digit()) {
-                    let meta = get_metadata_for_vocadb_id(input).unwrap();
-                    download_audio(meta, &output_dir);
-                } else {
-                    let service: String;
-                    if input.contains("nicovideo.jp") {
-                        service = "NicoNicoDouga".to_string();
-                    } else if input.contains("youtube") || input.contains("youtu.be") {
-                        service = "Youtube".to_string();
-                    } else {
-                        panic!("Unsupported service: {}", input)
-                    }
-                    let meta = match get_metadata_for_video(input.to_string(), &service) {
-                        Ok(meta) => {
-                            println!("Resolved VocaDB {} → {}", input, meta.url);
-                            meta
-                        }
-                        Err(e) => {
-                            eprintln!("Failed to resolve VocaDB {}: {}", input, e);
-                            SongMetadata {
-                                url: input.to_string(),
-                                main_picture: "".to_string(),
-                                artist: service.clone(),
-                                name: format!("CHECK METADATA - {}", extract_id(input).unwrap()),
-                            }
-                        }
-                    };
-                    download_audio(meta, &output_dir);
-                };
-            }
-        } else {
-            eprintln!("Could not read file: {}", url_file);
-            exit(1);
-        }
+    let meta = if input.chars().all(|c| c.is_ascii_digit()) {
+        get_metadata_for_vocadb_id(&input).await
     } else {
-        eprintln!("No file provided!");
+        let service = if input.contains("nicovideo.jp") {
+            "NicoNicoDouga".to_string()
+        } else {
+            "Youtube".to_string()
+        };
+
+        get_metadata_for_video(input.clone(), &service).await
+    };
+
+    let meta = match meta {
+        Ok(m) => m,
+        Err(e) => {
+            bar.finish_with_message(format!("Failed: {}", e));
+            return;
+        }
+    };
+
+    bar.set_message("Downloading cover");
+
+    let cover_path = job_dir.join("cover.jpg");
+    download_cover(
+        &meta.main_picture,
+        &cover_path,
+    )
+    .await
+    .unwrap();
+
+    bar.set_message("Downloading audio");
+
+    // Run blocking yt-dlp + ffmpeg off the async runtime
+    let out_dir = output_dir.clone();
+    let name = meta.name.clone();
+    let work_dir = job_dir.clone();
+
+    let result = tokio::task::spawn_blocking(move || {
+        download_audio(meta, &out_dir, &work_dir)
+    })
+    .await;
+
+    match result {
+        Ok(Ok(())) => {
+            std::fs::remove_dir_all(&job_dir).ok();
+            bar.finish_with_message(format!("Done: {}", name));
+        }
+        Ok(Err(e)) => {
+            bar.finish_with_message(format!("Failed: {}", e));
+        }
+        Err(_) => {
+            bar.finish_with_message("Worker panicked");
+        }
+    }
+}
+
+#[tokio::main]
+async fn main() {
+    let default_output_dir = dirs::home_dir()
+        .unwrap()
+        .join("Downloads/vocaloid")
+        .to_string_lossy()
+        .to_string();
+
+    fs::create_dir_all(&default_output_dir).unwrap();
+
+    let args: Vec<String> = env::args().collect();
+    if args.len() < 2 {
         print_usage();
-        exit(1);
+        return;
     }
 
-    println!("All done! Audio files are in: {}", output_dir);
+    let contents = fs::read_to_string(&args[1]).unwrap();
+
+    let jobs: Vec<String> = contents
+        .lines()
+        .map(str::trim)
+        .filter(|l| !l.is_empty() && !l.starts_with('#'))
+        .map(String::from)
+        .collect();
+
+    let mp = MultiProgress::new();
+    let style = ProgressStyle::with_template("{spinner} {msg}")
+        .unwrap()
+        .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]);
+
+    let max_parallel = num_cpus::get().min(4); // like a polite build system
+
+    stream::iter(jobs)
+        .for_each_concurrent(max_parallel, |job| {
+            let bar = mp.add(ProgressBar::new_spinner());
+            bar.set_style(style.clone());
+            bar.enable_steady_tick(std::time::Duration::from_millis(100));
+
+            let out = default_output_dir.clone();
+            async move {
+                process_song(job, out, bar).await;
+            }
+        })
+        .await;
+
+    println!("All done! Audio files are in: {}", default_output_dir);
 }
