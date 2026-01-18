@@ -1,4 +1,4 @@
-use std::{collections::HashMap, env, fs, process::{Command, exit}};
+use std::{env, fs, process::{Command, exit}};
 use std::path::Path;
 use serde::Deserialize;
 use url::Url;
@@ -31,6 +31,14 @@ struct Picture {
     url_original: String,
 }
 
+#[derive(Debug, Clone)]
+struct SongMetadata {
+    url: String,
+    main_picture: String,
+    artist: String,
+    name: String,
+}
+
 fn extract_id(input: &str) -> Option<String> {
     let url = Url::parse(input).ok()?;
 
@@ -55,10 +63,11 @@ fn extract_id(input: &str) -> Option<String> {
     }
 }
 
-fn get_metadata_for_video(url: String, service: &String) -> Result<HashMap<String, String>, String> {
+fn get_metadata_for_video(url: String, service: &String) -> Result<SongMetadata, String> {
     let api_url = format!(
         "https://vocadb.net/api/songs/byPv?pvService={}&pvId={}&fields=MainPicture,PVs",
-        service, extract_id(&url.as_str()).unwrap()
+        service,
+        extract_id(&url).unwrap()
     );
 
     let resp = reqwest::blocking::get(&api_url)
@@ -72,15 +81,15 @@ fn get_metadata_for_video(url: String, service: &String) -> Result<HashMap<Strin
         .json()
         .map_err(|e| format!("JSON parse error: {}", e))?;
 
-    Ok(HashMap::from([
-        ("url".to_string(), url),
-        ("mainPicture".to_string(), song.main_picture.url_original),
-        ("artistString".to_string(), song.artist_string),
-        ("name".to_string(), song.name),
-    ]))
+    Ok(SongMetadata {
+        url,
+        main_picture: song.main_picture.url_original,
+        artist: song.artist_string,
+        name: song.name,
+    })
 }
 
-fn get_metadata_for_vocadb_id(id: &str) -> Result<HashMap<String, String>, String> {
+fn get_metadata_for_vocadb_id(id: &str) -> Result<SongMetadata, String> {
     let api_url = format!(
         "https://vocadb.net/api/songs/{}?fields=MainPicture,PVs",
         id
@@ -103,17 +112,16 @@ fn get_metadata_for_vocadb_id(id: &str) -> Result<HashMap<String, String>, Strin
             url
         }
         Err(e) => {
-            panic!("Failed to resolve VocaDB {}: {}", id, e);
+            return Err(format!("Failed to resolve VocaDB {}: {}", id, e));
         }
     };
 
-    Ok(HashMap::from([
-        ("url".to_string(), url),
-        ("mainPicture".to_string(), song.main_picture.url_original),
-        ("artistString".to_string(), song.artist_string),
-        ("name".to_string(), song.name),
-    ]))
-
+    Ok(SongMetadata {
+        url,
+        main_picture: song.main_picture.url_original,
+        artist: song.artist_string,
+        name: song.name,
+    })
 }
 
 fn vocadb_id_to_url(song: &SongResponse) -> Result<String, String> {
@@ -201,8 +209,8 @@ fn safe_filename(s: &str) -> String {
         .collect()
 }
 
-fn download_audio(map: HashMap<String, String>, output_dir: &str) {
-    println!("Downloading audio from: {}", map.get(&"url".to_string()).unwrap().as_str());
+fn download_audio(meta: SongMetadata, output_dir: &str) {
+    println!("Downloading audio from: {}", meta.url);
 
     let output = Command::new("yt-dlp")
         .args(&[
@@ -210,7 +218,7 @@ fn download_audio(map: HashMap<String, String>, output_dir: &str) {
             "--audio-format", "mp3",
             "--audio-quality", "0",
             "-o", "song.mp3",
-            map.get(&"url".to_string()).unwrap().as_str()
+            &meta.url,
         ])
         .spawn()
         .unwrap()
@@ -219,19 +227,22 @@ fn download_audio(map: HashMap<String, String>, output_dir: &str) {
     match output {
         Ok(output) => {
             if !output.status.success() {
-                panic!("Error downloading {}: please check above logs", map.get(&"url".to_string()).unwrap().as_str());
+                panic!("Error downloading {}: please check above logs", meta.url);
             } else {
-                println!("Done: {}", map.get(&"url".to_string()).unwrap().as_str());
+                println!("Done: {}", meta.url);
             }
         }
         Err(e) => {
             panic!("Failed to execute yt-dlp: {}", e);
         }
     }
+
     let cover_path = "cover.jpg";
-    download_cover(&map["mainPicture"], cover_path).unwrap();
-    let artist = safe_filename(&map["artistString"]);
-    let title = safe_filename(&map["name"]);
+    download_cover(&meta.main_picture, cover_path).unwrap();
+
+    let artist = safe_filename(&meta.artist);
+    let title = safe_filename(&meta.name);
+
     let output2 = Command::new("ffmpeg")
         .args(&[
             "-y",
@@ -241,9 +252,9 @@ fn download_audio(map: HashMap<String, String>, output_dir: &str) {
             "-map", "1:v",
             "-c", "copy",
             "-id3v2_version", "3",
-            "-metadata", &format!("title={}", map["name"]),
-            "-metadata", &format!("artist={}", map["artistString"]),
-            "-metadata", &format!("album={}", map["name"]),
+            "-metadata", &format!("title={}", meta.name),
+            "-metadata", &format!("artist={}", meta.artist),
+            "-metadata", &format!("album={}", meta.name),
             "-metadata", "genre=VOCALOID",
             "-metadata:s:v", "title=Album cover",
             "-metadata:s:v", "comment=Cover (front)",
@@ -252,6 +263,7 @@ fn download_audio(map: HashMap<String, String>, output_dir: &str) {
         .spawn()
         .unwrap()
         .wait_with_output();
+
     match output2 {
         Ok(output) => {
             if !output.status.success() {
@@ -264,6 +276,7 @@ fn download_audio(map: HashMap<String, String>, output_dir: &str) {
             panic!("Failed to execute ffmpeg: {}", e);
         }
     }
+
     fs::remove_file("song.mp3").unwrap();
     fs::remove_file("cover.jpg").unwrap();
 }
@@ -284,8 +297,8 @@ fn main() {
                 }
 
                 if input.chars().all(|c| c.is_ascii_digit()) {
-                    let map = get_metadata_for_vocadb_id(input).unwrap();
-                    download_audio(map, &output_dir);
+                    let meta = get_metadata_for_vocadb_id(input).unwrap();
+                    download_audio(meta, &output_dir);
                 } else {
                     let service: String;
                     if input.contains("nicovideo.jp") {
@@ -295,22 +308,22 @@ fn main() {
                     } else {
                         panic!("Unsupported service: {}", input)
                     }
-                    let map = match get_metadata_for_video(input.to_string(), &service) {
-                        Ok(map) => {
-                            println!("Resolved VocaDB {} → {}", input, map.get(&"url".to_string()).unwrap().as_str());
-                            map
+                    let meta = match get_metadata_for_video(input.to_string(), &service) {
+                        Ok(meta) => {
+                            println!("Resolved VocaDB {} → {}", input, meta.url);
+                            meta
                         }
                         Err(e) => {
                             eprintln!("Failed to resolve VocaDB {}: {}", input, e);
-                            HashMap::from([
-                                ("url".to_string(), input.to_string()),
-                                ("mainPicture".to_string(), "".to_string()),
-                                ("artistString".to_string(), service),
-                                ("name".to_string(), format!("CHECK METADATA - {}", extract_id(input).unwrap())),
-                            ])
+                            SongMetadata {
+                                url: input.to_string(),
+                                main_picture: "".to_string(),
+                                artist: service.clone(),
+                                name: format!("CHECK METADATA - {}", extract_id(input).unwrap()),
+                            }
                         }
                     };
-                    download_audio(map, &output_dir);
+                    download_audio(meta, &output_dir);
                 };
             }
         } else {
