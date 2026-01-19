@@ -12,6 +12,10 @@ use indicatif::{ProgressBar, ProgressStyle};
 use futures::stream::{self, StreamExt};
 use indicatif::MultiProgress;
 use uuid::Uuid;
+use std::sync::{
+    Arc,
+    atomic::{AtomicUsize, Ordering},
+};
 
 #[derive(Debug, Deserialize)]
 struct SongResponse {
@@ -239,10 +243,16 @@ fn download_audio(
         .map_err(|e| format!("Failed to run yt-dlp: {}", e))?;
 
     if !status.success() {
+        let log: String;
+        if env::var("CI").is_ok() {
+            log = format!("logs: {}", fs::read_to_string(log_path).unwrap())
+        } else {
+            log = format!("(see {})", log_path.display().to_string())
+        }
         return Err(format!(
-            "yt-dlp failed for {} (see {})",
+            "yt-dlp failed for {} {}",
             meta.url,
-            log_path.display()
+            log
         ));
     }
 
@@ -274,10 +284,16 @@ fn download_audio(
         .map_err(|e| format!("Failed to run ffmpeg: {}", e))?;
 
     if !status2.success() {
+        let log: String;
+        if env::var("CI").is_ok() {
+            log = format!("logs: {}", fs::read_to_string(log_path).unwrap())
+        } else {
+            log = format!("(see {})", log_path.display().to_string())
+        }
         return Err(format!(
-            "ffmpeg failed for {} (see {})",
+            "ffmpeg failed for {} {}",
             meta.name,
-            log_path.display()
+            log
         ));
     }
 
@@ -288,11 +304,13 @@ async fn process_song(
     input: String,
     output_dir: String,
     bar: ProgressBar,
-) {
+) -> Result<(), String> {
     let job_dir: PathBuf = std::env::temp_dir()
         .join(format!("vocaloid_job_{}", Uuid::new_v4()));
 
-    fs::create_dir_all(&job_dir).unwrap();
+    fs::create_dir_all(&job_dir)
+        .map_err(|e| format!("tmp dir: {}", e))?;
+
     bar.set_message("Resolving metadata");
 
     let meta = if input.chars().all(|c| c.is_ascii_digit()) {
@@ -305,25 +323,14 @@ async fn process_song(
         };
 
         get_metadata_for_video(input.clone(), &service).await
-    };
-
-    let meta = match meta {
-        Ok(m) => m,
-        Err(e) => {
-            bar.finish_with_message(format!("Failed: {}", e));
-            return;
-        }
-    };
+    }?;
 
     bar.set_message("Downloading cover");
 
     let cover_path = job_dir.join("cover.jpg");
-    download_cover(
-        &meta.main_picture,
-        &cover_path,
-    )
-    .await
-    .unwrap();
+    download_cover(&meta.main_picture, &cover_path)
+        .await
+        .map_err(|e| format!("cover: {}", e))?;
 
     bar.set_message("Downloading audio");
 
@@ -341,12 +348,13 @@ async fn process_song(
         Ok(Ok(())) => {
             std::fs::remove_dir_all(&job_dir).ok();
             bar.finish_with_message(format!("Done: {}", name));
+            Ok(())
         }
         Ok(Err(e)) => {
-            bar.finish_with_message(format!("Failed: {}", e));
+            Err(e)
         }
         Err(_) => {
-            bar.finish_with_message("Worker panicked");
+            Err("Worker panicked".into())
         }
     }
 }
@@ -383,6 +391,8 @@ async fn main() {
 
     let max_parallel = num_cpus::get().min(4); // like a polite build system
 
+    let failures = Arc::new(AtomicUsize::new(0));
+
     stream::iter(jobs)
         .for_each_concurrent(max_parallel, |job| {
             let bar = mp.add(ProgressBar::new_spinner());
@@ -390,11 +400,27 @@ async fn main() {
             bar.enable_steady_tick(std::time::Duration::from_millis(100));
 
             let out = default_output_dir.clone();
+            let failures = failures.clone();
+            let err_bar = bar.clone();
+            let err_job = job.clone();
             async move {
-                process_song(job, out, bar).await;
+                if let Err(e) = process_song(job, out, bar).await {
+                    if env::var("CI").is_ok() {
+                        eprintln!("worker {} failure: {}", err_job, e);
+                    } else {
+                        err_bar.finish_with_message(format!("{} Failed: {}", err_job, e));
+                    }
+                    failures.fetch_add(1, Ordering::Relaxed);
+                }
             }
         })
         .await;
+
+    let count = failures.load(Ordering::Relaxed);
+    if count > 0 {
+        eprintln!("{} job(s) failed", count);
+        std::process::exit(1);
+    }
 
     println!("All done! Audio files are in: {}", default_output_dir);
 }
