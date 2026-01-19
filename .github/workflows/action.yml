@@ -15,5 +15,5 @@ jobs:
       - name: Setup yt-dlp
         uses: AnimMouse/setup-yt-dlp@v3
 
-      - name: Run Tests
+      - name: Test Downloader
         run: cd downloader && cargo run ./test-songs.txt
