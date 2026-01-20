@@ -16,6 +16,10 @@ use std::sync::{
     Arc,
     atomic::{AtomicUsize, Ordering},
 };
+use std::time::{Duration, SystemTime};
+use sha2::{Digest, Sha256};
+
+const CACHE_TTL: Duration = Duration::from_secs(60 * 60 * 24 * 7); // 7 days
 
 #[derive(Debug, Deserialize)]
 struct SongResponse {
@@ -81,17 +85,14 @@ async fn get_metadata_for_video(url: String, service: &String) -> Result<SongMet
         extract_id(&url).unwrap()
     );
 
-    let resp = reqwest::get(&api_url)
-        .await
-        .map_err(|e| format!("HTTP error: {}", e))?;
+    let client = reqwest::Client::builder()
+        .user_agent("vocaloid-downloader/1.0 (https://github.com/dot166/misc)")
+        .build()
+        .unwrap();
 
-    if !resp.status().is_success() {
-        return Err(format!("VocaDB returned {}", resp.status()));
-    }
-
-    let song: SongResponse = resp
-        .json()
-        .await
+    let json = get_cached_json(&api_url, &client).await?;
+    let song: SongResponse =
+        serde_json::from_str(&json)
         .map_err(|e| format!("JSON parse error: {}", e))?;
 
     Ok(SongMetadata {
@@ -108,17 +109,14 @@ async fn get_metadata_for_vocadb_id(id: &str) -> Result<SongMetadata, String> {
         id
     );
 
-    let resp = reqwest::get(&api_url)
-        .await
-        .map_err(|e| format!("HTTP error: {}", e))?;
+    let client = reqwest::Client::builder()
+        .user_agent("vocaloid-downloader/1.0 (https://github.com/dot166/misc)")
+        .build()
+        .unwrap();
 
-    if !resp.status().is_success() {
-        return Err(format!("VocaDB returned {}", resp.status()));
-    }
-
-    let song: SongResponse = resp
-        .json()
-        .await
+    let json = get_cached_json(&api_url, &client).await?;
+    let song: SongResponse =
+        serde_json::from_str(&json)
         .map_err(|e| format!("JSON parse error: {}", e))?;
 
     let url = vocadb_id_to_url(&song)?;
@@ -129,6 +127,81 @@ async fn get_metadata_for_vocadb_id(id: &str) -> Result<SongMetadata, String> {
         artist: song.artist_string,
         name: song.name,
     })
+}
+
+fn cache_dir() -> PathBuf {
+    dirs::cache_dir()
+        .unwrap_or_else(|| PathBuf::from("/tmp"))
+        .join("vocaloid-downloader")
+}
+
+fn prune_old_caches(dir: &Path) {
+    if let Ok(entries) = fs::read_dir(dir) {
+        let now = SystemTime::now();
+
+        for entry in entries.flatten() {
+            if let Ok(meta) = entry.metadata() {
+                if let Ok(modified) = meta.modified() {
+                    if let Ok(age) = now.duration_since(modified) {
+                        if age > CACHE_TTL {
+                            let _ = fs::remove_file(entry.path());
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+async fn get_cached_json(api_url: &str, client: &reqwest::Client)
+    -> Result<String, String>
+{
+    fs::create_dir_all(cache_dir())
+        .map_err(|e| format!("cache dir: {}", e))?;
+
+    prune_old_caches(&cache_dir());
+
+    let path = cache_path_for_url(api_url);
+
+    if path.exists() && cache_valid(&path) {
+        return fs::read_to_string(&path)
+            .map_err(|e| format!("cache read: {}", e));
+    }
+
+    let resp = client
+        .get(api_url)
+        .send()
+        .await
+        .map_err(|e| format!("HTTP error: {}", e))?;
+
+    if !resp.status().is_success() {
+        return Err(format!("VocaDB returned {}", resp.status()));
+    }
+
+    let body = resp.text().await
+        .map_err(|e| format!("read body: {}", e))?;
+
+    let _ = fs::write(&path, &body);
+    Ok(body)
+}
+
+fn cache_path_for_url(url: &str) -> PathBuf {
+    let mut hasher = Sha256::new();
+    hasher.update(url.as_bytes());
+    let name = format!("{:x}.json", hasher.finalize());
+
+    PathBuf::from(cache_dir()).join(name)
+}
+
+fn cache_valid(path: &Path) -> bool {
+    if let Ok(meta) = fs::metadata(path) {
+        if let Ok(modified) = meta.modified() {
+            if let Ok(age) = SystemTime::now().duration_since(modified) {
+                return age < CACHE_TTL;
+            }
+        }
+    }
+    false
 }
 
 fn vocadb_id_to_url(song: &SongResponse) -> Result<String, String> {
