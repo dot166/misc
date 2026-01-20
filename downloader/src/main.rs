@@ -344,6 +344,7 @@ fn download_audio(
             "-metadata", "genre=VOCALOID",
             "-metadata:s:v", "title=Album cover",
             "-metadata:s:v", "comment=Cover (front)",
+            "-metadata", "comment=Metadata from VocaDB (https://vocadb.net)",
             &format!(
                 "{}/{} - {}.mp3",
                 output_dir,
@@ -465,6 +466,8 @@ async fn main() {
     let max_parallel = num_cpus::get().min(4); // like a polite build system
 
     let failures = Arc::new(AtomicUsize::new(0));
+
+    println!("Metadata provided by VocaDB (https://vocadb.net)");
 
     stream::iter(jobs)
         .for_each_concurrent(max_parallel, |job| {
