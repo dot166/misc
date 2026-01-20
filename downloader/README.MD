@@ -35,3 +35,7 @@ you will also need a file that you put the URLs or IDs in, you can use [test-son
 ## License
 
 see [LICENSE](../LICENSE)
+
+## Third-Party Data
+
+This project retrieves metadata from [VocaDB](https://vocadb.net). VocaDB database contents are licensed under Creative Commons Attribution (CC BY). See https://wiki.vocadb.net/docs/public-api for details.
