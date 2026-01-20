@@ -8,12 +8,11 @@ This uses the [VocaDB](https://vocadb.net) API. Metadata is provided by VocaDB a
 
 Please be moderate with your usage of this in case your device gets blocked by the API. For more information, see the [VocaDB API Usage Terms](https://wiki.vocadb.net/docs/public-api#api-usage-rules).
 
-
 This tool downloads media; you are responsible for complying with the source site’s terms and copyright law.
 
 ## How to use
 
-i do not ship precompiled binaries of this, so you will need to compile it yourself or run it via cargo
+I do not ship precompiled binaries of this, so you will need to compile it yourself or run it via cargo
 
 Compile:
 ```
@@ -30,7 +29,7 @@ Run via binary:
 $ ./downloader {path of file}
 ```
 
-you will also need a file that you put the URLs or IDs in, you can use [test-songs.txt](test-songs.txt) as an example of how it is formatted
+You will also need a file that you put the URLs or IDs in, you can use [test-songs.txt](test-songs.txt) as an example of how it is formatted
 
 ## License
 
