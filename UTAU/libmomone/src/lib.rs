@@ -1,4 +1,69 @@
 use std::collections::HashMap;
+use rand::{distributions::Alphanumeric, Rng};
+use std::{fs, io, path::PathBuf};
+
+fn generate_random_string(len: usize) -> String {
+    rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(len)
+        .map(char::from)
+        .collect()
+}
+
+fn replace_in_file(output_file: &str, replacement_string: &str) {
+    let words: Vec<String> = replacement_string
+        .split_whitespace()
+        .map(|w| w.to_string())
+        .collect();
+
+    let file_template = fs::read_to_string("templates/template.txt").unwrap();
+    let speech_template = fs::read_to_string("templates/word.txt").unwrap();
+
+    let mut updated_content = file_template;
+    let mut total_dur = 0;
+
+    let mut output_path = PathBuf::from("output");
+    fs::create_dir_all(&output_path).unwrap();
+    output_path.push(output_file);
+
+    for word in words {
+        let mut segment = speech_template.clone();
+
+        segment = segment.replace("POS__", &total_dur.to_string());
+        segment = segment.replace("WORD__", &word);
+        let duration: i32 = get_note_length(word).parse().unwrap();
+        segment = segment.replace("DUR__", &duration.to_string());
+
+        total_dur += duration;
+
+        let tone: u8 = rand::thread_rng().gen_range(64..=67);
+        segment = segment.replace("TONE__", &tone.to_string());
+
+        updated_content.push('\n');
+        updated_content.push_str(&segment);
+    }
+
+    updated_content = updated_content.replace("TOTAL__DUR__", &total_dur.to_string());
+
+    updated_content.push_str("\n  curves: []");
+    updated_content.push_str("\nwave_parts: []");
+    fs::write(output_path, updated_content).unwrap();
+}
+
+pub fn generate_utau_projects() {
+    loop {
+        let mut text = String::new();
+        io::stdin().read_line(&mut text).unwrap();
+
+        let text = text.trim();
+        if text.is_empty() {
+            continue;
+        }
+
+        let output_file = format!("{}.ustx", generate_random_string(8));
+        replace_in_file(&output_file, convert(text.to_string()).as_str());
+    }
+}
 
 fn default_map() -> HashMap<String, String> {
     let map = HashMap::new();
