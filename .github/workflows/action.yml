@@ -17,3 +17,15 @@ jobs:
 
       - name: Test Downloader
         run: cd downloader && cargo run ./test-songs.txt
+
+  test_libmomone:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Test LibMomone
+        run: cd UTAU/libmomone && cargo test
