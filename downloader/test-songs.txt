@@ -1,6 +1,4 @@
 https://www.nicovideo.jp/watch/sm10282629
 1435
-1501
 # do not try youtube in CI, google blocks it, use the niconico ones for testing the logic
 # https://www.youtube.com/watch?v=uVI6H0LYyzM&gl=JP
-# 880726
