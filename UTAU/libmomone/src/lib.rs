@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use rand::{distr::Alphanumeric, Rng};
-use std::{fs, io, path::PathBuf};
+use std::{fs, path::PathBuf};
 
 fn generate_random_string(len: usize) -> String {
     rand::rng()
@@ -10,12 +10,7 @@ fn generate_random_string(len: usize) -> String {
         .collect()
 }
 
-fn replace_in_file(output_file: &str, replacement_string: &str) {
-    let words: Vec<String> = replacement_string
-        .split_whitespace()
-        .map(|w| w.to_string())
-        .collect();
-
+pub fn generate_utau_projects(replacement_strings: Vec<&str>) {
     let file_template = fs::read_to_string("templates/template.txt").unwrap();
     let speech_template = fs::read_to_string("templates/word.txt").unwrap();
 
@@ -24,45 +19,38 @@ fn replace_in_file(output_file: &str, replacement_string: &str) {
 
     let mut output_path = PathBuf::from("output");
     fs::create_dir_all(&output_path).unwrap();
-    output_path.push(output_file);
+    output_path.push(format!("{}.ustx", generate_random_string(8)));
 
-    for word in words {
-        let mut segment = speech_template.clone();
+    for replacement_string in replacement_strings {
+        let words: Vec<String> = convert(replacement_string.to_string()).as_str()
+            .split_whitespace()
+            .map(|w| w.to_string())
+            .collect();
 
-        segment = segment.replace("POS__", &total_dur.to_string());
-        segment = segment.replace("WORD__", &word);
-        let duration: i32 = get_note_length(word).parse().unwrap();
-        segment = segment.replace("DUR__", &duration.to_string());
+        for word in words {
+            let mut segment = speech_template.clone();
 
-        total_dur += duration;
+            segment = segment.replace("POS__", &total_dur.to_string());
+            segment = segment.replace("WORD__", &word);
+            let duration: i32 = get_note_length(word).parse().unwrap();
+            segment = segment.replace("DUR__", &duration.to_string());
 
-        let tone: u8 = rand::rng().random_range(64..=67);
-        segment = segment.replace("TONE__", &tone.to_string());
+            total_dur += duration;
 
-        updated_content.push('\n');
-        updated_content.push_str(&segment);
+            let tone: u8 = rand::rng().random_range(64..=67);
+            segment = segment.replace("TONE__", &tone.to_string());
+
+            updated_content.push('\n');
+            updated_content.push_str(&segment);
+        }
+
+        total_dur += 120; // gap between sentences
     }
-
     updated_content = updated_content.replace("TOTAL__DUR__", &total_dur.to_string());
 
     updated_content.push_str("\n  curves: []");
     updated_content.push_str("\nwave_parts: []");
     fs::write(output_path, updated_content).unwrap();
-}
-
-pub fn generate_utau_projects() {
-    loop {
-        let mut text = String::new();
-        io::stdin().read_line(&mut text).unwrap();
-
-        let text = text.trim();
-        if text.is_empty() {
-            continue;
-        }
-
-        let output_file = format!("{}.ustx", generate_random_string(8));
-        replace_in_file(&output_file, convert(text.to_string()).as_str());
-    }
 }
 
 fn default_map() -> HashMap<String, String> {
