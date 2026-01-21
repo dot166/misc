@@ -1,9 +1,9 @@
 use std::collections::HashMap;
-use rand::{distributions::Alphanumeric, Rng};
+use rand::{distr::Alphanumeric, Rng};
 use std::{fs, io, path::PathBuf};
 
 fn generate_random_string(len: usize) -> String {
-    rand::thread_rng()
+    rand::rng()
         .sample_iter(&Alphanumeric)
         .take(len)
         .map(char::from)
@@ -36,7 +36,7 @@ fn replace_in_file(output_file: &str, replacement_string: &str) {
 
         total_dur += duration;
 
-        let tone: u8 = rand::thread_rng().gen_range(64..=67);
+        let tone: u8 = rand::rng().random_range(64..=67);
         segment = segment.replace("TONE__", &tone.to_string());
 
         updated_content.push('\n');
