@@ -3,7 +3,27 @@ name: Tests
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
+  filter-paths:
+    runs-on: ubuntu-latest
+    outputs:
+      downloader_modified: ${{ steps.filter.outputs.downloader_modified }}
+      utau_stuff_modified: ${{ steps.filter.outputs.utau_stuff_modified }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          downloader_modified:
+            - 'downloader/**'
+            - '.github/**'
+          utau_stuff_modified:
+            - 'UTAU/**'
+            - '.github/**'
+
   test_downloader:
+    needs: filter-paths
+    if: needs.filter-paths.outputs.downloader_modified == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -19,6 +39,8 @@ jobs:
         run: cd downloader && cargo run ./test-songs.txt
 
   test_libmomone:
+    needs: filter-paths
+    if: needs.filter-paths.outputs.utau_stuff_modified == 'true'
     runs-on: ubuntu-latest
 
     steps:
