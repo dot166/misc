@@ -100,7 +100,7 @@ pub fn get_note_length(input: String) -> String {
 
     for note in notes {
         // remove punctuation from note before calculating the length because the punctuation would break the calculation and make the note too long
-        note_lengths.push((note.replace(".","").replace(",","").replace("?","").replace("!","").replace("'","").len()*180).to_string());
+        note_lengths.push((note.replace(".","").replace(",","").replace("?","").replace("!","").replace("'","").len()*180).max(360).to_string()); // minimum of 360 because single char notes were too fast when it was at 180
     }
 
     note_lengths.join(" ")
