@@ -77,6 +77,16 @@ pub fn convert(input: String) -> String {
         .join(" ")
 }
 
+fn snap_to_grid(value: i32, grid: i32) -> i32 {
+    ((value + grid / 2) / grid) * grid
+}
+
+fn count_vowels(s: &str) -> usize {
+    s.chars()
+        .filter(|c| matches!(c, 'a' | 'e' | 'i' | 'o' | 'u'))
+        .count()
+}
+
 pub fn get_note_length(input: String) -> String {
     let binding = input
         .to_lowercase();
@@ -86,9 +96,21 @@ pub fn get_note_length(input: String) -> String {
 
     let mut note_lengths: Vec<String> = Vec::new();
 
+    let base: f32 = 300.0;
+    let scale: f32 = 220.0;
+
     for note in notes {
         // remove punctuation from note before calculating the length because the punctuation would break the calculation and make the note too long
-        note_lengths.push((note.replace(".","").replace(",","").replace("?","").replace("!","").replace("'","").len()*180).max(360).to_string()); // minimum of 360 because single char notes were too fast when it was at 180
+        let clean = note.replace(".", "").replace(",", "").replace("?", "").replace("!", "").replace("'", "");
+
+        let vowels = count_vowels(&clean).max(1) as f32;
+
+        let mut note_length = (base + vowels.sqrt() * scale) as i32;
+
+        // Snap to UTAU's default 60-tick grid
+        note_length = snap_to_grid(note_length, 60);
+
+        note_lengths.push(note_length.to_string());
     }
 
     note_lengths.join(" ")
@@ -114,6 +136,6 @@ mod tests {
     #[test]
     fn note_length_correct() {
         let result = get_note_length("test".to_string());
-        assert_eq!(result, "720");
+        assert_eq!(result, "540");
     }
 }
