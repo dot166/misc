@@ -100,10 +100,7 @@ pub fn get_note_length(input: String) -> String {
     let scale: f32 = 220.0;
 
     for note in notes {
-        // remove punctuation from note before calculating the length because the punctuation would break the calculation and make the note too long
-        let clean = note.replace(".", "").replace(",", "").replace("?", "").replace("!", "").replace("'", "");
-
-        let vowels = count_vowels(&clean).max(1) as f32;
+        let vowels = count_vowels(&note).max(1) as f32;
 
         let mut note_length = (base + vowels.sqrt() * scale) as i32;
 
