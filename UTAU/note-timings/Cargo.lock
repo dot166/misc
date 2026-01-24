@@ -9,13 +9,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
-name = "eng-to-momone"
-version = "0.1.0"
-dependencies = [
- "libmomone",
-]
-
-[[package]]
 name = "getrandom"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -38,6 +31,13 @@ name = "libmomone"
 version = "0.1.0"
 dependencies = [
  "rand",
+]
+
+[[package]]
+name = "note-timings"
+version = "0.1.0"
+dependencies = [
+ "libmomone",
 ]
 
 [[package]]

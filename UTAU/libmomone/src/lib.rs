@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use rand::{distr::Alphanumeric, Rng};
 use std::{fs, path::PathBuf};
 
@@ -22,7 +21,7 @@ pub fn generate_utau_projects(replacement_strings: Vec<&str>) {
     output_path.push(format!("{}.ustx", generate_random_string(8)));
 
     for replacement_string in replacement_strings {
-        let words: Vec<String> = convert(replacement_string.to_string()).as_str()
+        let words: Vec<String> = replacement_string
             .split_whitespace()
             .map(|w| w.to_string())
             .collect();
@@ -51,30 +50,6 @@ pub fn generate_utau_projects(replacement_strings: Vec<&str>) {
     updated_content.push_str("\n  curves: []");
     updated_content.push_str("\nwave_parts: []");
     fs::write(output_path, updated_content).unwrap();
-}
-
-fn default_map() -> HashMap<String, String> {
-    let map = HashMap::new();
-
-    // Empty for now
-    //map.insert("test".into(), "te su to".into()); // experimental, broke it, this is only here to provide an example for other people on how to add to libmomone
-
-    map
-}
-
-pub fn convert(input: String) -> String {
-    let map = default_map();
-
-    input
-        .to_lowercase()
-        .split_whitespace()
-        .map(|word| {
-            map.get(word)
-                .cloned()
-                .unwrap_or_else(|| word.to_string())
-        })
-        .collect::<Vec<_>>()
-        .join(" ")
 }
 
 fn snap_to_grid(value: i32, grid: i32) -> i32 {
@@ -116,19 +91,6 @@ pub fn get_note_length(input: String) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn it_swaps_known_words() {
-        // empty, so no tests (·•᷄∩•᷅ )
-        //let result = convert("test".to_string());
-        //assert_eq!(result, "te su to");
-    }
-
-    #[test]
-    fn it_leaves_unknown_words() {
-        let result = convert("hello world".to_string());
-        assert_eq!(result, "hello world");
-    }
 
     #[test]
     fn note_length_correct() {
