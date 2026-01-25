@@ -19,7 +19,7 @@ use std::sync::{
 use std::time::{Duration, SystemTime};
 use sha2::{Digest, Sha256};
 
-const CACHE_TTL: Duration = Duration::from_secs(60 * 60 * 24 * 7); // 7 days
+const CACHE_TTL: Duration = Duration::from_secs(60 * 60 * 24 * 30); // 30 days
 
 #[derive(Debug, Deserialize)]
 struct SongResponse {
