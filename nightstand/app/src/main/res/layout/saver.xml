@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/saver_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
+    <LinearLayout
+        android:id="@+id/main_clock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/screensaver_margin"
+        android:layout_marginEnd="@dimen/screensaver_margin"
+        android:layout_marginStart="@dimen/screensaver_margin"
+        android:layout_marginTop="@dimen/time_margin_top"
+        android:orientation="vertical">
+        <TextClock
+          android:id="@+id/digital_clock"
+          style="@style/big_thin"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center"
+          android:layout_marginBottom="@dimen/bottom_text_spacing_digital"
+          android:ellipsize="none"
+          android:gravity="center"
+          android:singleLine="true"
+          android:textColor="@android:color/white"
+          android:textSize="@dimen/main_clock_font_size"/>
+        <include layout="@layout/date_and_next_alarm_time"/>
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/calendar_holder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/screensaver_margin"
+        android:layout_marginEnd="@dimen/screensaver_margin"
+        android:layout_marginStart="@dimen/screensaver_margin"
+        android:layout_marginTop="@dimen/time_margin_top"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/event"
+            style="@style/body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Meeting at 9:00 on 02.01"/>
+        <TextView
+            android:id="@+id/notice"
+            style="@style/body"
+            android:text="Calendar event data sourced from Android System"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+</FrameLayout>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+  <style name="body">
+    <item name="android:textSize">14sp</item>
+    <item name="android:textColor">@android:color/white</item>
+    <item name="android:fontFamily">sans-serif-medium</item>
+  </style>
+  <style name="big_thin">
+    <item name="android:textSize">@dimen/big_font_size</item>
+    <item name="android:fontFamily">sans-serif-thin</item>
+  </style>
+</resources>

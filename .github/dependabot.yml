@@ -18,3 +18,8 @@ updates:
     directory: "/UTAU/libmomone/" # Location of package manifests
     schedule:
       interval: "daily"
+ 
+  - package-ecosystem: "gradle" # See documentation for possible values
+    directory: "/nightstand/" # Location of package manifests
+    schedule:
+      interval: "daily"

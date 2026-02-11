@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_name">NightStand</string>
+    <string name="screensaver_settings">Screen saver settings</string>
+    <string name="night_mode_title">Night mode</string>
+    <string name="night_mode_summary">Very dim display (for dark rooms)</string>
+    <string name="next_alarm_description">Next alarm: <xliff:g id="alarm_time" example="Wed 8:00am">%s</xliff:g></string>
+    <string name="clock_brightness_percentage">%s%%</string>
+    <string name="night_mode_enabled_title">Enabled</string>
+    <string name="night_mode_dnd_title">Follow DND state</string>
+    <string name="night_mode_dnd_summary">Night mode follows Do Not Disturb state</string>
+    <string name="show_ampm_title">Show AM/PM indicator</string>
+    <string name="bold_text_title">Bold clock text</string>
+    <string name="night_mode_brightness_text_title">Brightness</string>
+    <string name="clock_color_title">Color</string>
+    <string name="event_str_main">%1$s at %2$s, %3$s</string>
+    <string name="all_day">all day</string>
+    <string name="until">until %1$s</string>
+    <string-array name="clock_color_entries">
+        <item>White</item>
+        <item>Red</item>
+        <item>Green</item>
+        <item>Blue</item>
+        <item>Pink</item>
+    </string-array>
+</resources>

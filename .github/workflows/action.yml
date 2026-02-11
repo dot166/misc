@@ -8,6 +8,7 @@ jobs:
     outputs:
       downloader_modified: ${{ steps.filter.outputs.downloader_modified }}
       utau_stuff_modified: ${{ steps.filter.outputs.utau_stuff_modified }}
+      nightstand_modified: ${{ steps.filter.outputs.nightstand_modified }}
     steps:
     - uses: actions/checkout@v6
     - uses: dorny/paths-filter@v3
@@ -19,6 +20,9 @@ jobs:
             - '.github/**'
           utau_stuff_modified:
             - 'UTAU/**'
+            - '.github/**'
+          nightstand_modified:
+            - 'nightstand/**'
             - '.github/**'
 
   test_downloader:
@@ -51,3 +55,30 @@ jobs:
 
       - name: Test LibMomone
         run: cd UTAU/libmomone && cargo test
+
+  build_nightstand:
+    needs: filter-paths
+    if: needs.filter-paths.outputs.nightstand_modified == 'true'
+    runs-on: ubuntu-latest
+    env:
+      ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_USERNAME }}
+      ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_PASSWD }}
+      ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY }}
+      ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_PASSWD }}
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+    
+    - name: Setup JDK 17
+      uses: actions/setup-java@v5
+      with:
+        distribution: 'zulu'
+        java-version: 17
+        cache: 'gradle'
+
+    - name: Build NightStand
+      run: cd nightstand && chmod +x gradlew && ./gradlew assembleRelease
+

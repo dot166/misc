@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="abbrev_wday_month_day_no_year">EEEMMMd</string>
+  <string name="full_wday_month_day_no_year">EEEEMMMMd</string>
+  <string name="default_clock_color">FFC0CB</string>
+  <bool name="default_clock_night_mode">true</bool>
+  <bool name="default_clock_bold_text">true</bool>
+  <bool name="default_clock_show_ampm">true</bool>
+  <bool name="default_clock_night_mode_dnd">false</bool>
+  <string name="default_clock_night_mode_brightness">40</string>
+  <string name="clock_emoji">A</string>
+    <string-array name="clock_color_values" translatable="false">
+        <item>FFFFFF</item>
+        <item>FF0000</item>
+        <item>00FF00</item>
+        <item>0000FF</item>
+        <item>FFC0CB</item>
+    </string-array>
+</resources>

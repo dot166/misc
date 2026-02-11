@@ -1,0 +1,32 @@
+//
+// Copyright (C) 2026 ._______166
+//
+
+android_library {
+    name: "NightStand",
+    static_libs: [
+        "j.Lib",
+    ],
+
+    manifest: "src/main/AndroidManifest.xml",
+
+    product_specific: true,
+
+    srcs: [
+        "src/main/java/**/*.kt",
+        "src/main/java/**/*.java",
+    ],
+
+    resource_dirs: [
+        "src/main/res",
+    ],
+
+    asset_dirs: [
+        "src/main/assets",
+    ],
+    use_resource_processor: true,
+
+    kotlincflags: ["-Xjvm-default=all"],
+    sdk_version: "current",
+    min_sdk_version: "30",
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <dimen name="time_margin_top">32dip</dimen>
+  <dimen name="screensaver_margin">16dip</dimen>
+  <dimen name="bottom_text_spacing_digital">-8dp</dimen>
+  <dimen name="main_clock_font_size">64sp</dimen>
+  <dimen name="big_font_size">32sp</dimen>
+  <dimen name="alarm_icon_padding">6dp</dimen>
+</resources>
