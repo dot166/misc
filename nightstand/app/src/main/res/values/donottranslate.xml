@@ -3,7 +3,7 @@
   <string name="abbrev_wday_month_day_no_year">EEEMMMd</string>
   <string name="full_wday_month_day_no_year">EEEEMMMMd</string>
   <string name="default_clock_color">FFC0CB</string>
-  <bool name="default_clock_night_mode">true</bool>
+  <bool name="default_clock_night_mode">false</bool>
   <bool name="default_clock_bold_text">true</bool>
   <bool name="default_clock_show_ampm">true</bool>
   <bool name="default_clock_night_mode_dnd">false</bool>

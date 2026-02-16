@@ -7,7 +7,6 @@ import android.app.AlarmManager;
 import android.app.AlarmManager.AlarmClockInfo;
 import android.app.NotificationManager;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
@@ -226,12 +225,10 @@ public class Utils {
                 includeSeconds ? "Hms" : "Hm");
     }
 
-    private static Context mContext;
-
     /** The model from which timed callbacks originate. */
     private static PeriodicCallbackModel mPeriodicCallbackModel;
 
-    private static SharedPreferences mPrefs;
+    private static Settings mPrefs;
 
     /**
      * To display the alarm clock in this font, use the character {@link R.string#clock_emoji}.
@@ -244,8 +241,7 @@ public class Utils {
 
     public static void init(Context ctx) {
         Context dp = ctx.createDeviceProtectedStorageContext();
-        mContext = dp;
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(dp);
+        mPrefs = new Settings(PreferenceManager.getDefaultSharedPreferences(dp), dp.getString(R.string.default_clock_color));
         mPeriodicCallbackModel = new PeriodicCallbackModel(dp);
     }
 
@@ -283,31 +279,31 @@ public class Utils {
     }
 
     static String getScreensaverClockColor() {
-        return (new Settings()).getScreensaverClockColor(mContext, mPrefs);
+        return mPrefs.getScreensaverClockColor();
     }
 
     static String getScreensaverClockNightModeColor() {
-        return (new Settings()).getClockNightModeColor(mContext, mPrefs);
+        return mPrefs.getClockNightModeColor();
     }
 
     static boolean getScreensaverNightModeDndOn() {
-        return (new Settings()).getScreensaverNightModeDndOn(mPrefs);
+        return mPrefs.getScreensaverNightModeDndOn();
     }
 
     static int getScreensaverNightModeBrightness() {
-        return (new Settings()).getScreensaverNightModeBrightness(mPrefs);
+        return mPrefs.getScreensaverNightModeBrightness();
     }
 
     static boolean getScreensaverNightModeOn() {
-        return (new Settings()).getScreensaverNightModeOn(mPrefs);
+        return mPrefs.getScreensaverNightModeOn();
     }
 
     static boolean getScreensaverShowAmPmOn() {
-        return (new Settings()).getScreensaverShowAmPmOn(mPrefs);
+        return mPrefs.getScreensaverShowAmPmOn();
     }
 
     static boolean getScreensaverBoldTextOn() {
-        return (new Settings()).getScreensaverBoldTextOn(mPrefs);
+        return mPrefs.getScreensaverBoldTextOn();
     }
 
     public static ValueAnimator getScaleAnimator(View view, float... values) {

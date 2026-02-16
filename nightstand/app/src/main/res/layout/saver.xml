@@ -26,7 +26,38 @@
           android:singleLine="true"
           android:textColor="@android:color/white"
           android:textSize="@dimen/main_clock_font_size"/>
-        <include layout="@layout/date_and_next_alarm_time"/>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:gravity="center">
+            <TextView
+                android:id="@+id/date"
+                style="@style/body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAllCaps="true"
+                tools:text="Sa., 01.01."/>
+            <TextView
+                android:id="@+id/nextAlarmIcon"
+                style="@style/body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginEnd="@dimen/alarm_icon_padding"
+                android:layout_marginStart="@dimen/alarm_icon_padding"
+                android:ellipsize="none"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:text="@string/clock_emoji"/>
+            <TextView
+                android:id="@+id/nextAlarm"
+                style="@style/body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAllCaps="true"
+                tools:text="Mo., 07:00"/>
+        </LinearLayout>
     </LinearLayout>
     <LinearLayout
         android:id="@+id/calendar_holder"

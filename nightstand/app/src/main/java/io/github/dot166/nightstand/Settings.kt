@@ -21,61 +21,58 @@ import android.content.SharedPreferences
 /**
  * This class encapsulates the storage of application preferences in [SharedPreferences].
  */
-internal class Settings {
+internal class Settings(val prefs: SharedPreferences, val defaultColour: String) {
     /**
      * @return a value indicating what color the digital clock is in the screensaver in Night Mode
      */
-    fun getClockNightModeColor(context: Context, prefs: SharedPreferences): String {
-        return getClockColor(context, prefs, SettingsActivity.KEY_NIGHT_MODE_COLOR)
+    fun getClockNightModeColor(): String {
+        return getClockColor(SettingsActivity.KEY_NIGHT_MODE_COLOR)
     }
 
     /**
      * @return a value indicating what color to use for the digital clock display on the screensaver
      */
-    fun getScreensaverClockColor(context: Context, prefs: SharedPreferences): String {
-        return getClockColor(context, prefs, SettingsActivity.KEY_CLOCK_COLOR)
+    fun getScreensaverClockColor(): String {
+        return getClockColor(SettingsActivity.KEY_CLOCK_COLOR)
     }
 
     /**
      * @return `true` if the screen saver should be dimmed for lower contrast at night
      */
-    fun getScreensaverNightModeOn(prefs: SharedPreferences): Boolean {
+    fun getScreensaverNightModeOn(): Boolean {
         return prefs.getBoolean(SettingsActivity.KEY_NIGHT_MODE, false)
     }
 
     /**
      * @return `true` if the screen saver should be dimmed for lower contrast at night
      */
-    fun getScreensaverNightModeDndOn(prefs: SharedPreferences): Boolean {
+    fun getScreensaverNightModeDndOn(): Boolean {
         return prefs.getBoolean(SettingsActivity.KEY_NIGHT_MODE_DND, false)
     }
 
     /**
      * @return `int` the screen saver brightness level at night
      */
-    fun getScreensaverNightModeBrightness(prefs: SharedPreferences): Int {
+    fun getScreensaverNightModeBrightness(): Int {
         return prefs.getInt(SettingsActivity.KEY_NIGHT_MODE_BRIGHTNESS, 40)
     }
 
     /**
      * @return `true` if the screen saver should show AM/PM in 12 hour mode
      */
-    fun getScreensaverShowAmPmOn(prefs: SharedPreferences): Boolean {
+    fun getScreensaverShowAmPmOn(): Boolean {
         return prefs.getBoolean(SettingsActivity.KEY_SHOW_AMPM, true)
     }
 
     /**
      * @return `true` if the screen saver should show the clock in bold
      */
-    fun getScreensaverBoldTextOn(prefs: SharedPreferences): Boolean {
-        return prefs.getBoolean(SettingsActivity.KEY_BOLD_TEXT, false)
+    fun getScreensaverBoldTextOn(): Boolean {
+        return prefs.getBoolean(SettingsActivity.KEY_BOLD_TEXT, true)
     }
 
-    private fun getClockColor(context: Context, prefs: SharedPreferences, key: String?): String {
-        val defaultColor = context.getString(R.string.default_clock_color)
-        val clockColor: String = prefs.getString(key, defaultColor)!!
-        // Use hardcoded locale to perform toUpperCase, because in some languages toUpperCase adds
-        // accent to character, which breaks the enum conversion.
+    private fun getClockColor(key: String?): String {
+        val clockColor: String = prefs.getString(key, defaultColour)!!
         return clockColor.uppercase()
     }
 }
