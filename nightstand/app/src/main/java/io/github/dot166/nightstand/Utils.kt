@@ -111,9 +111,9 @@ object Utils {
     /**
      * Clock views can call this to refresh their alarm to the next upcoming value.
      */
-    fun refreshAlarm(context: Context, clock: View) {
-        val nextAlarmIconView = clock.findViewById<TextView>(R.id.nextAlarmIcon)
-        val nextAlarmView = clock.findViewById<TextView?>(R.id.nextAlarm) ?: return
+    fun refreshAlarm(context: Context, clock: View?) {
+        val nextAlarmIconView = clock!!.findViewById<TextView>(R.id.nextAlarmIcon)
+        val nextAlarmView = clock!!.findViewById<TextView?>(R.id.nextAlarm) ?: return
 
         val alarm = getNextAlarm(context)
         if (!TextUtils.isEmpty(alarm)) {
@@ -129,16 +129,16 @@ object Utils {
         }
     }
 
-    fun setClockIconTypeface(clock: View) {
-        val nextAlarmIconView = clock.findViewById<TextView>(R.id.nextAlarmIcon)
+    fun setClockIconTypeface(clock: View?) {
+        val nextAlarmIconView = clock!!.findViewById<TextView>(R.id.nextAlarmIcon)
         nextAlarmIconView.setTypeface(getAlarmIconTypeface(clock.context))
     }
 
     /**
      * Clock views can call this to refresh their date.
      */
-    fun updateDate(dateSkeleton: String?, descriptionSkeleton: String?, clock: View) {
-        val dateDisplay = clock.findViewById<TextView?>(R.id.date) ?: return
+    fun updateDate(dateSkeleton: String?, descriptionSkeleton: String?, clock: View?) {
+        val dateDisplay = clock!!.findViewById<TextView?>(R.id.date) ?: return
 
         val l = Locale.getDefault()
         val datePattern = DateFormat.getBestDateTimePattern(l, dateSkeleton)
@@ -259,7 +259,7 @@ object Utils {
      * @param offset an offset applied to the minute to control when the callback occurs
      */
     @JvmStatic
-    fun addMinuteCallback(runnable: Runnable?, offset: Long) {
+    fun addMinuteCallback(runnable: Runnable, offset: Long) {
         enforceMainLooper()
         mPeriodicCallbackModel!!.addMinuteCallback(runnable, offset)
     }
@@ -267,7 +267,7 @@ object Utils {
     /**
      * @param runnable to be called every midnight
      */
-    fun addMidnightCallback(runnable: Runnable?) {
+    fun addMidnightCallback(runnable: Runnable) {
         enforceMainLooper()
         mPeriodicCallbackModel!!.addMidnightCallback(runnable)
     }

@@ -25,7 +25,7 @@ import kotlin.math.min
  */
 class MoveScreensaverRunnable(
     /** The container that houses [.mSaverView].  */
-    private val mContentView: View
+    private val mContentView: View?
 ) : Runnable {
     internal enum class Scene {
         CLOCK,
@@ -34,9 +34,9 @@ class MoveScreensaverRunnable(
 
     private var mCurrentScene: Scene? = Scene.CLOCK
 
-    private val mClockView: View = mContentView.findViewById(R.id.main_clock)
+    private val mClockView: View = mContentView!!.findViewById(R.id.main_clock)
 
-    private val mEventView: View = mContentView.findViewById(R.id.calendar_holder)
+    private val mEventView: View = mContentView!!.findViewById(R.id.calendar_holder)
 
     /** Accelerate the hide animation.  */
     private val mAcceleration: Interpolator = AccelerateInterpolator()
@@ -57,7 +57,7 @@ class MoveScreensaverRunnable(
      */
     init {
         mSaverView = mClockView
-        mCalendarModel = CalendarModel(mContentView.context)
+        mCalendarModel = CalendarModel(mContentView!!.context)
     }
 
     /**
@@ -122,7 +122,7 @@ class MoveScreensaverRunnable(
             // mContentView are untrustworthy if this was caused by a configuration change. To
             // combat this, we position the mSaverView randomly within the smallest box that is
             // guaranteed to work.
-            val smallestDim = min(mContentView.width, mContentView.height)
+            val smallestDim = min(mContentView!!.width, mContentView.height)
             val newX: Float = getRandomPoint((smallestDim - mSaverView.width).toFloat())
             val newY: Float = getRandomPoint((smallestDim - mSaverView.height).toFloat())
 
@@ -142,7 +142,7 @@ class MoveScreensaverRunnable(
         } else {
             // Select a new random position anywhere in mContentView that will fit mSaverView.
             val newX: Float =
-                getRandomPoint((mContentView.width - mSaverView.width).toFloat())
+                getRandomPoint((mContentView!!.width - mSaverView.width).toFloat())
             val newY: Float =
                 getRandomPoint((mContentView.height - mSaverView.height).toFloat())
 
