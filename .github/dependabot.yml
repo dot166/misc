@@ -23,3 +23,18 @@ updates:
     directory: "/nightstand/" # Location of package manifests
     schedule:
       interval: "daily"
+
+  - package-ecosystem: "cargo" # See documentation for possible values
+    directory: "/aosp/source/lib_aosp/" # Location of package manifests
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "cargo" # See documentation for possible values
+    directory: "/aosp/source/emoji/" # Location of package manifests
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "cargo" # See documentation for possible values
+    directory: "/aosp/source/ci-tool/" # Location of package manifests
+    schedule:
+      interval: "daily"

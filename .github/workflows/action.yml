@@ -2,6 +2,10 @@ name: Tests
 
 on: [push, pull_request, workflow_dispatch]
 
+env:
+  CARGO_TERM_COLOR: always
+  GH_AUTH_TOKEN: ${{ secrets.GH_TOKEN }} # setting GH_TOKEN for the entire workflow
+
 jobs:
   filter-paths:
     runs-on: ubuntu-latest
@@ -9,6 +13,7 @@ jobs:
       downloader_modified: ${{ steps.filter.outputs.downloader_modified }}
       utau_stuff_modified: ${{ steps.filter.outputs.utau_stuff_modified }}
       nightstand_modified: ${{ steps.filter.outputs.nightstand_modified }}
+      aosp_modified: ${{ steps.filter.outputs.aosp_modified }}
     steps:
     - uses: actions/checkout@v6
     - uses: dorny/paths-filter@v3
@@ -23,6 +28,9 @@ jobs:
             - '.github/**'
           nightstand_modified:
             - 'nightstand/**'
+            - '.github/**'
+          aosp_modified:
+            - 'aosp/source/**'
             - '.github/**'
 
   test_downloader:
@@ -81,4 +89,20 @@ jobs:
 
     - name: Build NightStand
       run: cd nightstand && chmod +x gradlew && ./gradlew assembleRelease
+
+  ci-tool:
+    needs: filter-paths
+    if: needs.filter-paths.outputs.aosp_modified == 'true'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Configure git
+      run: |
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions[bot]"
+    - name: Run CI Tool
+      run: |
+       cd aosp/source/ci-tool
+       cargo update
+       cargo run --release
 
