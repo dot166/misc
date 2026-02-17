@@ -79,8 +79,40 @@ fn latest_graphene_tag() -> String {
 }
 
 fn graphene_tag_from_manifest(path: &str) -> String {
-    let xml = fs::read_to_string(path)
-        .expect("Failed to read manifest file");
+    let mut xml;
+    if Path::new(path).exists() {
+        xml = fs::read_to_string(path)
+            .expect("Failed to read local manifest")
+    } else {
+        const URL: &str = "http://dot166.github.io/jOS-Updates/felix-stable";
+
+        let response = get(URL)
+            .expect("Failed to fetch release metadata");
+
+        let body = response
+            .text()
+            .expect("Failed to read release metadata");
+
+        let line = body
+            .lines()
+            .next()
+            .expect("Release metadata was empty");
+
+        let tag = line
+            .split_whitespace()
+            .next()
+            .expect("Failed to parse manifest tag");
+
+        let url = format!(
+            "https://raw.githubusercontent.com/dot166/platform_manifest/{}/default.xml",
+            tag.to_string()
+        );
+
+        xml = get(url)
+            .expect("Failed to fetch manifest fallback")
+            .text()
+            .expect("Failed to read fallback manifest")
+    }
 
     let mut reader = Reader::from_str(&xml);
     reader.trim_text(true);
