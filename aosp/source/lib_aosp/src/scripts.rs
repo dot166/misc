@@ -80,7 +80,7 @@ fn latest_graphene_tag() -> String {
 }
 
 fn graphene_tag_from_manifest(path: &str) -> String {
-    let mut xml;
+    let xml;
     if Path::new(path).exists() {
         xml = fs::read_to_string(path)
             .expect("Failed to read local manifest")
