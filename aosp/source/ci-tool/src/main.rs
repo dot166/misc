@@ -24,6 +24,12 @@ fn main() {
     unsafe { env::set_var("IS_CI", "true"); }
     env::set_current_dir(&get_script_dir().unwrap()).expect("Failed to change directory");
     let scripts = ["build-android", "emoji", "fork-aosp", "manage", "update-checkout"];
+    env::set_current_dir("lib_aosp").unwrap();
+    let status = Command::new("cargo").arg("update").status().unwrap();
+    if !status.success() {
+        panic!("Failed to update dependencies of libAOSP");
+    }
+    env::set_current_dir(&Path::new("..")).unwrap();
     for script in scripts.iter() {
         println!("Building {}", script);
         env::set_current_dir(&Path::new(script)).unwrap();

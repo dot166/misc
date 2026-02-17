@@ -116,7 +116,7 @@ fn graphene_tag_from_manifest(path: &str) -> String {
     }
 
     let mut reader = Reader::from_str(&xml);
-    reader.trim_text(true);
+    reader.config_mut().trim_text(true);
 
     let mut buf = Vec::new();
 

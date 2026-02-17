@@ -1,4 +1,4 @@
-use rand::{distr::Alphanumeric, Rng};
+use rand::{distr::Alphanumeric, RngExt};
 use std::{fs, path::PathBuf};
 
 fn generate_random_string(len: usize) -> String {
