@@ -3,6 +3,12 @@ package io.github.dot166.nightstand
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
+import android.content.ComponentName
+import android.content.Context
+import android.media.MediaMetadata
+import android.media.session.MediaController
+import android.media.session.MediaSessionManager
+import android.media.session.PlaybackState
 import android.view.View
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
@@ -29,7 +35,8 @@ class MoveScreensaverRunnable(
 ) : Runnable {
     internal enum class Scene {
         CLOCK,
-        EVENT
+        EVENT,
+        MUSIC
     }
 
     private var mCurrentScene: Scene? = Scene.entries[0]
@@ -37,6 +44,8 @@ class MoveScreensaverRunnable(
     private val mClockView: View = mContentView!!.findViewById(R.id.main_clock)
 
     private val mEventView: View = mContentView!!.findViewById(R.id.calendar_holder)
+
+    private val mMusicView: View = mContentView!!.findViewById(R.id.music_holder)
 
     /** Accelerate the hide animation.  */
     private val mAcceleration: Interpolator = AccelerateInterpolator()
@@ -51,6 +60,11 @@ class MoveScreensaverRunnable(
     private var mActiveAnimator: Animator? = null
 
     private val mCalendarModel: CalendarModel
+
+    private lateinit var mediaCallback: MediaController.Callback
+
+    private var currentController: MediaController? = null
+    var mIsPlaying = false
 
     /**
      * @param mContentView contains the `saverView`
@@ -77,12 +91,75 @@ class MoveScreensaverRunnable(
             (mEventView.findViewById<View?>(R.id.event) as TextView).text = event.toString()
         }
 
+        val mediaSessionManager =
+            mContentView!!.context.getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
+
+        val componentName = ComponentName(mContentView.context, NightStandNotificationListener::class.java)
+
+        val controllers = mediaSessionManager.getActiveSessions(componentName)
+
+        val playing = controllers.firstOrNull {
+            it.playbackState?.state == PlaybackState.STATE_PLAYING
+        }
+
+        if (playing != null) {
+            mIsPlaying = true
+            updateMetadata(playing.metadata)
+            playing.registerCallback(mediaCallback)
+        }
+
+        mediaSessionManager.addOnActiveSessionsChangedListener(
+            { controllers ->
+                handleControllersChanged(controllers)
+            },
+            componentName
+        )
+
+        mediaCallback = object : MediaController.Callback() {
+            override fun onMetadataChanged(metadata: MediaMetadata?) {
+                updateMetadata(metadata)
+            }
+
+            override fun onPlaybackStateChanged(state: PlaybackState?) {
+                mIsPlaying = state!!.state == PlaybackState.STATE_PLAYING
+            }
+        }
+
         // Execute the position updater runnable to choose the first random position of saver view.
         run()
         mEventView.visibility = View.GONE
+        mMusicView.visibility = View.GONE
 
         // Schedule callbacks every minute to adjust the position of mSaverView.
         addMinuteCallback(this, -FADE_TIME)
+    }
+
+    private fun handleControllersChanged(controllers: List<MediaController>?) {
+        val playing = controllers!!.firstOrNull {
+            it.playbackState?.state == PlaybackState.STATE_PLAYING
+        }
+
+        if (playing != currentController) {
+            if (currentController != null) {
+                currentController?.unregisterCallback(mediaCallback)
+            }
+            currentController = playing
+            currentController?.registerCallback(mediaCallback)
+            mIsPlaying = if (currentController!!.playbackState != null) {
+                currentController!!.playbackState!!.state == PlaybackState.STATE_PLAYING
+            } else {
+                // assume not playing
+                false
+            }
+            updateMetadata(playing?.metadata)
+        }
+    }
+
+    fun updateMetadata(metadata: MediaMetadata?) {
+        val title = metadata?.getString(MediaMetadata.METADATA_KEY_TITLE)
+        val artist = metadata?.getString(MediaMetadata.METADATA_KEY_ARTIST)
+        (mMusicView.findViewById<View?>(R.id.song_title) as TextView).text = title
+        (mMusicView.findViewById<View?>(R.id.song_artist) as TextView).text = artist
     }
 
     private fun getNextScene(): Scene {
@@ -97,6 +174,14 @@ class MoveScreensaverRunnable(
             }
 
             if (nextScene == Scene.EVENT && !mCalendarModel.hasUpcomingEvent()) {
+                nextScene = if (Scene.entries.indexOf(nextScene) + 1 <= Scene.entries.size) {
+                    Scene.entries[Scene.entries.indexOf(nextScene) + 1]
+                } else {
+                    Scene.entries[0]
+                }
+            }
+
+            if (nextScene == Scene.MUSIC && !mIsPlaying) {
                 nextScene = if (Scene.entries.indexOf(nextScene) + 1 <= Scene.entries.size) {
                     Scene.entries[Scene.entries.indexOf(nextScene) + 1]
                 } else {
@@ -195,6 +280,7 @@ class MoveScreensaverRunnable(
     private fun switchScene(next: Scene?) {
         mClockView.visibility = if (next == Scene.CLOCK) View.VISIBLE else View.GONE
         mEventView.visibility = if (next == Scene.EVENT) View.VISIBLE else View.GONE
+        mMusicView.visibility = if (next == Scene.MUSIC) View.VISIBLE else View.GONE
 
         val event = mCalendarModel.event
         if (mCalendarModel.hasUpcomingEvent() && next == Scene.EVENT && event != null) {
@@ -204,6 +290,7 @@ class MoveScreensaverRunnable(
         mSaverView = when (next) {
             Scene.CLOCK -> mClockView
             Scene.EVENT -> mEventView
+            Scene.MUSIC -> mMusicView
             else -> mClockView // just fallback
         }
         mCurrentScene = next

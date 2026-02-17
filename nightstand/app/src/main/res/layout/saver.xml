@@ -81,4 +81,26 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     </LinearLayout>
+    <LinearLayout
+        android:id="@+id/music_holder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/screensaver_margin"
+        android:layout_marginEnd="@dimen/screensaver_margin"
+        android:layout_marginStart="@dimen/screensaver_margin"
+        android:layout_marginTop="@dimen/time_margin_top"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/song_title"
+            style="@style/body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="ローリンガール"/>
+        <TextView
+            android:id="@+id/song_artist"
+            style="@style/body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="wowaka feat. 初音ミク"/>
+    </LinearLayout>
 </FrameLayout>
