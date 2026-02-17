@@ -77,7 +77,7 @@
         <TextView
             android:id="@+id/notice"
             style="@style/body"
-            android:text="Calendar event data sourced from Android System"
+            android:text="@string/calendar_event_data_sourced_from_android_system"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     </LinearLayout>

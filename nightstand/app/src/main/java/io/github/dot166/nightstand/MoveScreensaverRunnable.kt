@@ -32,7 +32,7 @@ class MoveScreensaverRunnable(
         EVENT
     }
 
-    private var mCurrentScene: Scene? = Scene.CLOCK
+    private var mCurrentScene: Scene? = Scene.entries[0]
 
     private val mClockView: View = mContentView!!.findViewById(R.id.main_clock)
 
@@ -85,6 +85,28 @@ class MoveScreensaverRunnable(
         addMinuteCallback(this, -FADE_TIME)
     }
 
+    private fun getNextScene(): Scene {
+        var nextScene: Scene
+        if (screensaverNightModeOn) {
+            nextScene = Scene.entries[0]
+        } else {
+            nextScene = if (Scene.entries.indexOf(mCurrentScene) + 1 <= Scene.entries.size) {
+                Scene.entries[Scene.entries.indexOf(mCurrentScene) + 1]
+            } else {
+                Scene.entries[0]
+            }
+
+            if (nextScene == Scene.EVENT && !mCalendarModel.hasUpcomingEvent()) {
+                nextScene = if (Scene.entries.indexOf(nextScene) + 1 <= Scene.entries.size) {
+                    Scene.entries[Scene.entries.indexOf(nextScene) + 1]
+                } else {
+                    Scene.entries[0]
+                }
+            }
+        }
+        return nextScene
+    }
+
     /**
      * Stop the random movement of the saver view within the content view.
      */
@@ -102,15 +124,7 @@ class MoveScreensaverRunnable(
     override fun run() {
         enforceMainLooper()
 
-        var nextScene =
-            if (mCalendarModel.hasUpcomingEvent() && mCurrentScene == Scene.CLOCK && !screensaverNightModeOn)
-                Scene.EVENT
-            else
-                Scene.CLOCK
-
-        if (screensaverNightModeOn) {
-            nextScene = Scene.CLOCK
-        }
+        val nextScene = getNextScene()
 
         if (nextScene != mCurrentScene) {
             switchScene(nextScene)
@@ -187,7 +201,11 @@ class MoveScreensaverRunnable(
             (mEventView.findViewById<View?>(R.id.event) as TextView).text = event.toString()
         }
 
-        mSaverView = if (next == Scene.CLOCK) mClockView else mEventView
+        mSaverView = when (next) {
+            Scene.CLOCK -> mClockView
+            Scene.EVENT -> mEventView
+            else -> mClockView // just fallback
+        }
         mCurrentScene = next
     }
 
