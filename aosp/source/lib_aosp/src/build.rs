@@ -6,6 +6,10 @@ use std::process::Command;
 
 pub enum Device {
     // list of devices natively supported by GrapheneOS (and forks of it)
+    Rango, //rango (Pixel 10 Pro Fold)
+    Mustang, //mustang (Pixel 10 Pro XL)
+    Blazer, //blazer (Pixel 10 Pro)
+    Frankel, //frankel (Pixel 10)
     Tegu, //tegu (Pixel 9a)
     Comet, //comet (Pixel 9 Pro Fold)
     Komodo, //komodo (Pixel 9 Pro XL)
@@ -28,6 +32,10 @@ pub enum Device {
 impl Display for Device {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Rango => f.write_str("rango"),
+            Self::Mustang => f.write_str("mustang"),
+            Self::Blazer => f.write_str("blazer"),
+            Self::Frankel => f.write_str("frankel"),
             Self::Tegu => f.write_str("tegu"),
             Self::Comet => f.write_str("comet"),
             Self::Komodo => f.write_str("komodo"),
@@ -51,6 +59,10 @@ impl Display for Device {
 
 pub fn get_device(device: String) -> Device {
     match device.as_str() {
+        "rango" => Device::Rango,
+        "mustang" => Device::Mustang,
+        "blazer" => Device::Blazer,
+        "frankel" => Device::Frankel,
         "tegu" => Device::Tegu,
         "comet" => Device::Comet,
         "komodo" => Device::Komodo,
@@ -109,6 +121,10 @@ pub fn build_aosp(device: Device, build_type: BuildType) {
     let build_args;
     match device {
         // build args are sourced from https://grapheneos.org/build
+        Device::Rango=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
+        Device::Mustang=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
+        Device::Blazer=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
+        Device::Frankel=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
         Device::Tegu=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
         Device::Comet=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
         Device::Komodo=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
