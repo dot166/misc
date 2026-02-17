@@ -109,25 +109,25 @@ pub fn build_aosp(device: Device, build_type: BuildType) {
     let build_args;
     match device {
         // build args are sourced from https://grapheneos.org/build
-        Device::Tegu=>build_args = "vendorbootimage vendorkernelbootimage target-files-package",
-        Device::Comet=>build_args = "vendorbootimage vendorkernelbootimage target-files-package",
-        Device::Komodo=>build_args = "vendorbootimage vendorkernelbootimage target-files-package",
-        Device::Caiman=>build_args = "vendorbootimage vendorkernelbootimage target-files-package",
-        Device::Tokay=>build_args = "vendorbootimage vendorkernelbootimage target-files-package",
-        Device::Akita=>build_args = "vendorbootimage vendorkernelbootimage target-files-package",
-        Device::Husky=>build_args = "vendorbootimage vendorkernelbootimage target-files-package",
-        Device::Shiba=>build_args = "vendorbootimage vendorkernelbootimage target-files-package",
-        Device::Felix=>build_args = "vendorbootimage vendorkernelbootimage target-files-package",
-        Device::Tangorpro=>build_args = "vendorbootimage vendorkernelbootimage target-files-package",
-        Device::Lynx=>build_args = "vendorbootimage vendorkernelbootimage target-files-package",
-        Device::Cheetah=>build_args = "vendorbootimage vendorkernelbootimage target-files-package",
-        Device::Panther=>build_args = "vendorbootimage vendorkernelbootimage target-files-package",
-        Device::Bluejay=>build_args = "vendorbootimage target-files-package",
-        Device::Raven=>build_args = "vendorbootimage target-files-package",
-        Device::Oriole=>build_args = "vendorbootimage target-files-package",
+        Device::Tegu=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
+        Device::Comet=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
+        Device::Komodo=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
+        Device::Caiman=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
+        Device::Tokay=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
+        Device::Akita=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
+        Device::Husky=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
+        Device::Shiba=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
+        Device::Felix=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
+        Device::Tangorpro=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
+        Device::Lynx=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
+        Device::Cheetah=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
+        Device::Panther=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
+        Device::Bluejay=>build_args = "vendorbootimage target-files-package otatools-package",
+        Device::Raven=>build_args = "vendorbootimage target-files-package otatools-package",
+        Device::Oriole=>build_args = "vendorbootimage target-files-package otatools-package",
         Device::SdkPhone64X8664=>build_args = "",
     }
-    let pixel_args = format!("m otatools-package && script/finalize.sh && script/generate-release.sh {} $BUILD_NUMBER", device);
+    let pixel_args = format!("script/finalize.sh && script/generate-release.sh {} $BUILD_NUMBER", device);
     let extra_args;
     if build_args.is_empty() { // only on emulator
         extra_args = "emulator";
