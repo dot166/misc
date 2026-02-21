@@ -42,7 +42,6 @@ fn main() {
         "platform_manifest",
         "platform_packages_apps_DeskClock",
         "platform_packages_apps_Dialer",
-        "platform_packages_apps_ExactCalculator",
         "platform_packages_apps_Launcher3",
         "platform_packages_apps_Settings",
         "platform_packages_apps_SetupWizard2",
