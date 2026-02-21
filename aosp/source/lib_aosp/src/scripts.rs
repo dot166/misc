@@ -18,7 +18,7 @@ fn fetch_common_sh_at_tag(tag: &str) -> String {
 }
 
 pub fn read_common_sh() -> (String, String, String) {
-    let contents = fetch_common_sh_at_tag(latest_graphene_tag());
+    let contents = fetch_common_sh_at_tag(&latest_graphene_tag());
 
     let mut aosp_tag = String::new();
     let mut aosp_tag_old = String::new();
