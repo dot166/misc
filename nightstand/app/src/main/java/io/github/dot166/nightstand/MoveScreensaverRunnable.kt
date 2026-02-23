@@ -5,15 +5,19 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.content.ComponentName
 import android.content.Context
+import android.graphics.PorterDuff
+import android.graphics.drawable.AdaptiveIconDrawable
 import android.media.MediaMetadata
 import android.media.session.MediaController
 import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
+import android.os.Build
 import android.view.View
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.Interpolator
 import android.widget.TextView
+import androidx.core.graphics.drawable.DrawableCompat
 import io.github.dot166.nightstand.Utils.addMinuteCallback
 import io.github.dot166.nightstand.Utils.dimClockView
 import io.github.dot166.nightstand.Utils.enforceMainLooper
@@ -60,6 +64,16 @@ class MoveScreensaverRunnable(
         // Stop any existing animations or callbacks.
         stop()
 
+        mediaCallback = object : MediaController.Callback() {
+            override fun onMetadataChanged(metadata: MediaMetadata?) {
+                updateMetadata(metadata)
+            }
+
+            override fun onPlaybackStateChanged(state: PlaybackState?) {
+                mIsPlaying = state!!.state == PlaybackState.STATE_PLAYING
+            }
+        }
+
         // Reset the alpha to 0 so saver view will be randomly positioned within the new bounds.
         mSaverView.setAlpha(0f)
 
@@ -83,6 +97,7 @@ class MoveScreensaverRunnable(
 
         if (playing != null) {
             mIsPlaying = true
+            currentController = playing
             updateMetadata(playing.metadata)
             playing.registerCallback(mediaCallback)
         }
@@ -93,16 +108,6 @@ class MoveScreensaverRunnable(
             },
             componentName
         )
-
-        mediaCallback = object : MediaController.Callback() {
-            override fun onMetadataChanged(metadata: MediaMetadata?) {
-                updateMetadata(metadata)
-            }
-
-            override fun onPlaybackStateChanged(state: PlaybackState?) {
-                mIsPlaying = state!!.state == PlaybackState.STATE_PLAYING
-            }
-        }
 
         // Execute the position updater runnable to choose the first random position of saver view.
         run()
@@ -135,8 +140,64 @@ class MoveScreensaverRunnable(
     fun updateMetadata(metadata: MediaMetadata?) {
         val title = metadata?.getString(MediaMetadata.METADATA_KEY_TITLE)
         val artist = metadata?.getString(MediaMetadata.METADATA_KEY_ARTIST)
-        (mMusicView.findViewById<View?>(R.id.song_title) as TextView).text = title
-        (mMusicView.findViewById<View?>(R.id.song_artist) as TextView).text = artist
+
+        val titleView = mMusicView.findViewById<TextView>(R.id.song_title)
+        val artistView = mMusicView.findViewById<TextView>(R.id.song_artist)
+
+        titleView.text = title
+        artistView.text = artist
+
+        if (currentController?.packageName != null) {
+            applyMonochromeAppIcon(titleView, currentController!!.packageName)
+        }
+    }
+
+    private fun applyMonochromeAppIcon(titleView: TextView, packageName: String) {
+        val context = titleView.context
+        val pm = context.packageManager
+
+        try {
+            val rawIcon = pm.getApplicationIcon(packageName)
+
+            // Extract the best possible layer
+            val icon = when {
+                Build.VERSION.SDK_INT >= 33 &&
+                        rawIcon is AdaptiveIconDrawable &&
+                        rawIcon.monochrome != null -> {
+                    rawIcon.monochrome!!.mutate()
+                }
+
+                rawIcon is AdaptiveIconDrawable -> {
+                    rawIcon.foreground.mutate()
+                }
+
+                else -> {
+                    rawIcon.mutate()
+                }
+            }
+
+            // Wrap to ensure safe tinting
+            val wrapped = DrawableCompat.wrap(icon)
+
+            // Tint to match text color
+            DrawableCompat.setTint(wrapped, titleView.currentTextColor)
+            DrawableCompat.setTintMode(wrapped, PorterDuff.Mode.SRC_IN)
+
+            // Resize to match line height
+            val size = titleView.lineHeight
+            wrapped.setBounds(0, 0, size, size)
+
+            titleView.setCompoundDrawablesRelative(
+                wrapped,
+                null,
+                null,
+                null
+            )
+
+        } catch (e: Exception) {
+            // Fallback: clear icon if anything goes wrong
+            titleView.setCompoundDrawablesRelative(null, null, null, null)
+        }
     }
 
     /**
