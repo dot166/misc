@@ -2,15 +2,11 @@ package io.github.dot166.nightstand
 
 import android.app.AlarmManager
 import android.content.BroadcastReceiver
-import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
-import android.database.Cursor
-import android.provider.CalendarContract
 import android.service.dreams.DreamService
-import android.text.format.DateUtils
 import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver
@@ -58,7 +54,7 @@ class NightStand : DreamService() {
         setContentView(R.layout.saver)
 
         mContentView = findViewById(R.id.saver_container)
-        mMainClockView = mContentView!!.findViewById(R.id.main_clock)
+        mMainClockView = mContentView!!.findViewById(R.id.content)
         mDigitalClock = mMainClockView!!.findViewById(R.id.digital_clock)
 
         isScreenBright = false
@@ -73,7 +69,7 @@ class NightStand : DreamService() {
                     or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
         )
 
-        mPositionUpdater = MoveScreensaverRunnable(mContentView)
+        mPositionUpdater = MoveScreensaverRunnable(mContentView!!, mMainClockView!!)
 
         // We want the screen saver to exit upon user interaction.
         isInteractive = false

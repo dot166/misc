@@ -31,21 +31,11 @@ import kotlin.math.min
  */
 class MoveScreensaverRunnable(
     /** The container that houses [.mSaverView].  */
-    private val mContentView: View?
+    private val mContentView: View,
+    /** The display within the [.mContentView] that is randomly positioned.  */
+    private val mSaverView: View
 ) : Runnable {
-    internal enum class Scene {
-        CLOCK,
-        EVENT,
-        MUSIC
-    }
-
-    private var mCurrentScene: Scene? = Scene.entries[0]
-
-    private val mClockView: View = mContentView!!.findViewById(R.id.main_clock)
-
-    private val mEventView: View = mContentView!!.findViewById(R.id.calendar_holder)
-
-    private val mMusicView: View = mContentView!!.findViewById(R.id.music_holder)
+    private val mMusicView: View = mSaverView.findViewById(R.id.music_holder)
 
     /** Accelerate the hide animation.  */
     private val mAcceleration: Interpolator = AccelerateInterpolator()
@@ -53,26 +43,15 @@ class MoveScreensaverRunnable(
     /** Decelerate the show animation.  */
     private val mDeceleration: Interpolator = DecelerateInterpolator()
 
-    /** The display within the [.mContentView] that is randomly positioned.  */
-    private var mSaverView: View
-
     /** Tracks the currently executing animation if any; used to gracefully stop the animation.  */
     private var mActiveAnimator: Animator? = null
 
-    private val mCalendarModel: CalendarModel
+    private val mCalendarModel: CalendarModel = CalendarModel(mContentView.context)
 
     private lateinit var mediaCallback: MediaController.Callback
 
     private var currentController: MediaController? = null
     var mIsPlaying = false
-
-    /**
-     * @param mContentView contains the `saverView`
-     */
-    init {
-        mSaverView = mClockView
-        mCalendarModel = CalendarModel(mContentView!!.context)
-    }
 
     /**
      * Start or restart the random movement of the saver view within the content view.
@@ -88,11 +67,11 @@ class MoveScreensaverRunnable(
 
         val event = mCalendarModel.event
         if (mCalendarModel.hasUpcomingEvent() && event != null) {
-            (mEventView.findViewById<View?>(R.id.event) as TextView).text = event.toString()
+            (mSaverView.findViewById<View?>(R.id.event) as TextView).text = event.toString()
         }
 
         val mediaSessionManager =
-            mContentView!!.context.getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
+            mContentView.context.getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
 
         val componentName = ComponentName(mContentView.context, NightStandNotificationListener::class.java)
 
@@ -127,8 +106,6 @@ class MoveScreensaverRunnable(
 
         // Execute the position updater runnable to choose the first random position of saver view.
         run()
-        mEventView.visibility = View.GONE
-        mMusicView.visibility = View.GONE
 
         // Schedule callbacks every minute to adjust the position of mSaverView.
         addMinuteCallback(this, -FADE_TIME)
@@ -162,36 +139,6 @@ class MoveScreensaverRunnable(
         (mMusicView.findViewById<View?>(R.id.song_artist) as TextView).text = artist
     }
 
-    private fun getNextScene(): Scene {
-        var nextScene: Scene
-        if (screensaverNightModeOn) {
-            nextScene = Scene.entries[0]
-        } else {
-            nextScene = if (Scene.entries.indexOf(mCurrentScene) + 1 <= Scene.entries.size) {
-                Scene.entries[Scene.entries.indexOf(mCurrentScene) + 1]
-            } else {
-                Scene.entries[0]
-            }
-
-            if (nextScene == Scene.EVENT && !mCalendarModel.hasUpcomingEvent()) {
-                nextScene = if (Scene.entries.indexOf(nextScene) + 1 <= Scene.entries.size) {
-                    Scene.entries[Scene.entries.indexOf(nextScene) + 1]
-                } else {
-                    Scene.entries[0]
-                }
-            }
-
-            if (nextScene == Scene.MUSIC && !mIsPlaying) {
-                nextScene = if (Scene.entries.indexOf(nextScene) + 1 <= Scene.entries.size) {
-                    Scene.entries[Scene.entries.indexOf(nextScene) + 1]
-                } else {
-                    Scene.entries[0]
-                }
-            }
-        }
-        return nextScene
-    }
-
     /**
      * Stop the random movement of the saver view within the content view.
      */
@@ -208,11 +155,17 @@ class MoveScreensaverRunnable(
 
     override fun run() {
         enforceMainLooper()
-
-        val nextScene = getNextScene()
-
-        if (nextScene != mCurrentScene) {
-            switchScene(nextScene)
+        val event = mCalendarModel.event
+        if (mCalendarModel.hasUpcomingEvent() && event != null) {
+            (mSaverView.findViewById<View?>(R.id.event) as TextView).text = event.toString()
+        } else {
+            (mSaverView.findViewById<View?>(R.id.event) as TextView).text =
+                mContentView.context.getString(R.string.no_events_found_in_android_system)
+        }
+        if (mIsPlaying) {
+            mMusicView.visibility = View.VISIBLE
+        } else {
+            mMusicView.visibility = View.GONE
         }
 
         val selectInitialPosition = mSaverView.alpha == 0f
@@ -221,7 +174,7 @@ class MoveScreensaverRunnable(
             // mContentView are untrustworthy if this was caused by a configuration change. To
             // combat this, we position the mSaverView randomly within the smallest box that is
             // guaranteed to work.
-            val smallestDim = min(mContentView!!.width, mContentView.height)
+            val smallestDim = min(mContentView.width, mContentView.height)
             val newX: Float = getRandomPoint((smallestDim - mSaverView.width).toFloat())
             val newY: Float = getRandomPoint((smallestDim - mSaverView.height).toFloat())
 
@@ -241,7 +194,7 @@ class MoveScreensaverRunnable(
         } else {
             // Select a new random position anywhere in mContentView that will fit mSaverView.
             val newX: Float =
-                getRandomPoint((mContentView!!.width - mSaverView.width).toFloat())
+                getRandomPoint((mContentView.width - mSaverView.width).toFloat())
             val newY: Float =
                 getRandomPoint((mContentView.height - mSaverView.height).toFloat())
 
@@ -275,25 +228,6 @@ class MoveScreensaverRunnable(
             mActiveAnimator = all
         }
         mActiveAnimator!!.start()
-    }
-
-    private fun switchScene(next: Scene?) {
-        mClockView.visibility = if (next == Scene.CLOCK) View.VISIBLE else View.GONE
-        mEventView.visibility = if (next == Scene.EVENT) View.VISIBLE else View.GONE
-        mMusicView.visibility = if (next == Scene.MUSIC) View.VISIBLE else View.GONE
-
-        val event = mCalendarModel.event
-        if (mCalendarModel.hasUpcomingEvent() && next == Scene.EVENT && event != null) {
-            (mEventView.findViewById<View?>(R.id.event) as TextView).text = event.toString()
-        }
-
-        mSaverView = when (next) {
-            Scene.CLOCK -> mClockView
-            Scene.EVENT -> mEventView
-            Scene.MUSIC -> mMusicView
-            else -> mClockView // just fallback
-        }
-        mCurrentScene = next
     }
 
     companion object {

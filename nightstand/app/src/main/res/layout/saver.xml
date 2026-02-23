@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@android:color/black">
     <LinearLayout
-        android:id="@+id/main_clock"
+        android:id="@+id/content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/screensaver_margin"
@@ -58,49 +58,31 @@
                 android:textAllCaps="true"
                 tools:text="Mo., 07:00"/>
         </LinearLayout>
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/calendar_holder"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/screensaver_margin"
-        android:layout_marginEnd="@dimen/screensaver_margin"
-        android:layout_marginStart="@dimen/screensaver_margin"
-        android:layout_marginTop="@dimen/time_margin_top"
-        android:orientation="vertical">
         <TextView
             android:id="@+id/event"
             style="@style/body"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="Meeting at 9:00 on 02.01"/>
-        <TextView
-            android:id="@+id/notice"
-            style="@style/body"
-            android:text="@string/calendar_event_data_sourced_from_android_system"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/music_holder"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/screensaver_margin"
-        android:layout_marginEnd="@dimen/screensaver_margin"
-        android:layout_marginStart="@dimen/screensaver_margin"
-        android:layout_marginTop="@dimen/time_margin_top"
-        android:orientation="vertical">
-        <TextView
-            android:id="@+id/song_title"
-            style="@style/body"
+        <LinearLayout
+            android:id="@+id/music_holder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="ローリンガール"/>
-        <TextView
-            android:id="@+id/song_artist"
-            style="@style/body"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:text="wowaka feat. 初音ミク"/>
+            android:layout_gravity="center_vertical"
+            android:gravity="center"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/song_title"
+                style="@style/body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="ローリンガール"/>
+            <TextView
+                android:id="@+id/song_artist"
+                style="@style/body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="wowaka feat. 初音ミク"/>
+        </LinearLayout>
     </LinearLayout>
 </FrameLayout>
