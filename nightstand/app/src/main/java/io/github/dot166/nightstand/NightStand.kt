@@ -40,7 +40,7 @@ class NightStand : DreamService() {
     override fun onCreate() {
         Log.i("NightStand", "NightStand created")
 
-        setTheme(com.google.android.material.R.style.Theme_Material3Expressive_DayNight_NoActionBar)
+        setTheme(com.google.android.material.R.style.Theme_Material3_DayNight_NoActionBar)
         super.onCreate()
 
         mDateFormat = getString(R.string.abbrev_wday_month_day_no_year)
