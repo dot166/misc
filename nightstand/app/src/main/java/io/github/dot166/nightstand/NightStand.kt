@@ -62,14 +62,6 @@ class NightStand : DreamService() {
         Utils.setClockIconTypeface(mContentView)
         Utils.setScreensaverTimeFormat(mDigitalClock, true)
 
-        mContentView!!.setSystemUiVisibility(
-            (View.SYSTEM_UI_FLAG_LOW_PROFILE
-                    or View.SYSTEM_UI_FLAG_IMMERSIVE
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
-        )
-
         mPositionUpdater = MoveScreensaverRunnable(mContentView!!, mMainClockView!!)
 
         // We want the screen saver to exit upon user interaction.
