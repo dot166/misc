@@ -36,6 +36,7 @@ class NightStand : DreamService() {
             Utils.refreshAlarm(this@NightStand, mContentView)
         }
     }
+    private var receiverRegistered = false
 
     override fun onCreate() {
         Log.i("NightStand", "NightStand created")
@@ -75,18 +76,25 @@ class NightStand : DreamService() {
         isInteractive = false
         isFullscreen = true
 
-        // Setup handlers for time reference changes and date updates.
-        registerReceiver(
-            mAlarmChangedReceiver,
-            IntentFilter(AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED),
-            RECEIVER_NOT_EXPORTED
-        )
-
         Utils.updateDate(mDateFormat, mDateFormatForAccessibility, mContentView)
         Utils.refreshAlarm(this, mContentView)
 
         startPositionUpdater()
         Utils.addMidnightCallback(mMidnightUpdater)
+    }
+
+    override fun onDreamingStarted() {
+        super.onDreamingStarted()
+
+        // Setup handlers for time reference changes and date updates.
+        if (!receiverRegistered) {
+            registerReceiver(
+                mAlarmChangedReceiver,
+                IntentFilter(AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED),
+                RECEIVER_NOT_EXPORTED
+            )
+            receiverRegistered = true
+        }
     }
 
     override fun onDetachedFromWindow() {
@@ -95,9 +103,17 @@ class NightStand : DreamService() {
 
         Utils.removePeriodicCallback(mMidnightUpdater)
         stopPositionUpdater()
+    }
+
+    override fun onDreamingStopped() {
+        Log.i("NightStand", "NightStand finished")
+        super.onDreamingStopped()
 
         // Tear down handlers for time reference changes and date updates.
-        unregisterReceiver(mAlarmChangedReceiver)
+        if (receiverRegistered) {
+            unregisterReceiver(mAlarmChangedReceiver)
+            receiverRegistered = false
+        }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
