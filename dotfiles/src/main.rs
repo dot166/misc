@@ -72,7 +72,7 @@ fn ensure_arch() -> Result<()> {
     let info = OsRelease::new().context("Failed to parse /etc/os-release")?;
 
     match info.id.as_str() {
-        "arch" | "manjaro" | "garuda" => Ok(()),
+        "arch" => Ok(()),
         other => bail!("Unsupported distribution: {:?}", other),
     }
 }
