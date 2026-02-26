@@ -82,15 +82,6 @@ fn main() {
     if let Err(e) = status {
         panic!("Error pushing changes: {}", e);
     }
-    thread::sleep(time::Duration::from_secs(5));
-    fs::create_dir("tmp").unwrap();
-    env::set_current_dir("tmp").unwrap();
-    let status = Command::new("../../manage").arg("init").status().unwrap();
-    if !status.success() {
-        panic!("Failed to run init script");
-    }
-    env::set_current_dir(&Path::new("..")).unwrap();
-    fs::remove_dir_all("tmp").unwrap();
 }
 
 fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> std::io::Result<()> {
