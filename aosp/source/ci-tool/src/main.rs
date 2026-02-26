@@ -44,6 +44,26 @@ fn main() {
         fs::copy("target/release/".to_owned() + script, get_script_dir().unwrap().join("../".to_owned() + script)).unwrap();
         env::set_current_dir(&Path::new("..")).unwrap();
     }
+    let status = Command::new("git").arg("clone").arg("https:github.com/google/mozc.git").status().unwrap();
+    if !status.success() {
+        panic!("Failed to clone mozc");
+    }
+    env::set_current_dir(&Path::new("mozc/src")).unwrap();
+    let status = Command::new("python3").arg("build_tools/update_deps.py").status().unwrap();
+    if !status.success() {
+        panic!("Failed to update mozc deps");
+    }
+    let status = Command::new("bazelisk").arg("build").arg("package").arg("--config").arg("oss_android").arg("--config").arg("release_build").status().unwrap();
+    if !status.success() {
+        panic!("Failed to build mozc");
+    }
+    let status = Command::new("unzip").arg("bazel-bin/android/jni/native_libs.zip").status().unwrap();
+    if !status.success() {
+        panic!("Failed to unzip mozc");
+    }
+    copy_dir_all("libs", "../../../mocz");
+    env::set_current_dir(&Path::new("../..")).unwrap();
+    fs::remove_dir_all("mozc");
     let status = Command::new("git")
         .arg("commit")
         .arg("../../.")
@@ -71,4 +91,20 @@ fn main() {
     }
     env::set_current_dir(&Path::new("..")).unwrap();
     fs::remove_dir_all("tmp").unwrap();
+}
+
+fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> std::io::Result<()> {
+    fs::create_dir_all(&dst)?;
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let ty = entry.file_type()?;
+        let dest_path = dst.as_ref().join(entry.file_name());
+
+        if ty.is_dir() {
+            copy_dir_all(entry.path(), dest_path)?;
+        } else {
+            fs::copy(entry.path(), dest_path)?;
+        }
+    }
+    Ok(())
 }
