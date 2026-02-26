@@ -54,7 +54,7 @@ fn main() -> Result<()> {
     if args.laptop {
         install_android_tools()?;
         install_libreoffice()?;
-        Pkg::install(&["displaylink", "evdi-dkms"])?;
+        Pkg::install(&["displaylink", "evdi-dkms", "kid3", "audacity", "openutau-bin"])?;
     }
 
     if args.server {
@@ -168,6 +168,7 @@ fn install_base_packages() -> Result<()> {
         "mikusays",
         "plymouth-theme-mikuboot-git",
         "mingw-w64-gcc",
+        "dosfstools",
     ])?;
     run("sudo", &["plymouth-set-default-theme", "-R", "mikuboot"])?;
     Ok(())
@@ -219,10 +220,15 @@ fn install_gui() -> Result<()> {
         "kdeconnect",
         "sshfs",
         "ark",
-        "proton-pass",
+        "proton-pass-bin",
         "proton-vpn-gtk-app",
         "partitionmanager",
         "plasma-systemmonitor",
+        "yt-dlp",
+        "qemu-full",
+        "virt-manager",
+        "dnsmasq",
+        "kde-gtk-config",
     ])?;
 
     run("sudo", &["systemctl", "enable", "plasmalogin"])?;
@@ -297,7 +303,7 @@ fn setup_flatpak() -> Result<()> {
 
 fn install_android_tools() -> Result<()> {
     println!("[*] Installing Android Studio and VSCode...");
-    Pkg::install(&["android-studio", "visual-studio-code-bin"])
+    Pkg::install(&["android-studio", "visual-studio-code-bin", "android-tools", "github-desktop-bin"])
 }
 
 fn install_dev_stack() -> Result<()> {
