@@ -44,7 +44,7 @@ fn main() {
         fs::copy("target/release/".to_owned() + script, get_script_dir().unwrap().join("../".to_owned() + script)).unwrap();
         env::set_current_dir(&Path::new("..")).unwrap();
     }
-    let status = Command::new("git").arg("clone").arg("https:github.com/google/mozc.git").status().unwrap();
+    let status = Command::new("git").arg("clone").arg("https://github.com/google/mozc.git").status().unwrap();
     if !status.success() {
         panic!("Failed to clone mozc");
     }
