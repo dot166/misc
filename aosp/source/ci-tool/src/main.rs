@@ -62,6 +62,11 @@ fn main() {
         panic!("Failed to unzip mozc");
     }
     copy_dir_all("libs", "../../../mocz");
+    let status = Command::new("bazelisk").arg("build").arg("//data_manager/oss:mozc_dataset_for_oss").arg("--config").arg("linux").arg("--config").arg("release_build").status().unwrap();
+    if !status.success() {
+        panic!("Failed to build mozc");
+    }
+    fs::copy("bazel-bin/data_manager/oss/mozc.data", "../../../mocz");
     env::set_current_dir(&Path::new("../..")).unwrap();
     fs::remove_dir_all("mozc");
     let status = Command::new("git")
