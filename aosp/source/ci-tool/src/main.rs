@@ -70,8 +70,15 @@ fn main() {
     env::set_current_dir(&Path::new("../..")).unwrap();
     fs::remove_dir_all("mozc");
     let status = Command::new("git")
-        .arg("commit")
+        .arg("add")
         .arg("../../.")
+        .status();
+
+    if let Err(e) = status {
+        panic!("Error adding changes: {}", e);
+    }
+    let status = Command::new("git")
+        .arg("commit")
         .arg("-m")
         .arg(format!("rebuilt scripts {}", chrono::offset::Utc::now().date_naive().format("%Y%m%d")))
         .status();
