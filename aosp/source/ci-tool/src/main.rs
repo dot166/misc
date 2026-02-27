@@ -66,7 +66,7 @@ fn main() {
     if !status.success() {
         panic!("Failed to build mozc");
     }
-    fs::copy("bazel-bin/data_manager/oss/mozc.data", "../../../mocz");
+    fs::copy("bazel-bin/data_manager/oss/mozc.data", "../../../mocz/mozc.data");
     env::set_current_dir(&Path::new("../..")).unwrap();
     fs::remove_dir_all("mozc");
     let status = Command::new("git")
