@@ -2,7 +2,7 @@
 // Copyright (C) 2026 ._______166
 //
 
-android_library {
+android_app {
     name: "NightStand",
     static_libs: [
         "j.Lib",
