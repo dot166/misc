@@ -48,7 +48,7 @@ pub fn read_common_sh() -> (String, String, String) {
 
 pub fn read_config_file() -> (String, String, String) {
     let graphene_tag = latest_graphene_tag();
-    let graphene_tag_old = graphene_tag_from_manifest("../../platform_manifest/default.xml");
+    let graphene_tag_old = graphene_tag_from_manifest("platform_manifest/default.xml");
     let lineage_latest_branch = latest_lineage_branch();
 
     (graphene_tag, graphene_tag_old, lineage_latest_branch)
