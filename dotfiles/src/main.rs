@@ -229,6 +229,9 @@ fn install_gui() -> Result<()> {
         "virt-manager",
         "dnsmasq",
         "kde-gtk-config",
+        "fcitx5-im",
+        "fcitx5-mozc-ut",
+        "mozc-ut"
     ])?;
 
     run("sudo", &["systemctl", "enable", "plasmalogin"])?;
