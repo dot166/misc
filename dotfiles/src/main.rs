@@ -217,8 +217,6 @@ fn install_gui() -> Result<()> {
         "dkms",
         "bluedevil",
         "powerdevil",
-        "kdeconnect",
-        "sshfs",
         "ark",
         "proton-pass-bin",
         "proton-vpn-gtk-app",
