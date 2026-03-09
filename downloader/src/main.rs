@@ -29,7 +29,7 @@ struct SongResponse {
     #[serde(rename = "artistString")]
     artist_string: String,
     name: String,
-    id: String,
+    id: i32,
 }
 
 #[derive(Debug, Deserialize)]
@@ -53,7 +53,7 @@ struct SongMetadata {
     main_picture: String,
     artist: String,
     name: String,
-    id: String,
+    id: i32,
 }
 
 fn extract_id(input: &str) -> Option<String> {
@@ -129,7 +129,7 @@ async fn get_metadata_for_vocadb_id(id: &str) -> Result<SongMetadata, String> {
         main_picture: song.main_picture.url_original,
         artist: song.artist_string,
         name: song.name,
-        id: id.to_string(),
+        id: id.parse().expect("Invalid ID"),
     })
 }
 
@@ -284,15 +284,6 @@ async fn download_cover(url: &str, path: &PathBuf) -> Result<(), String> {
     }
 }
 
-fn safe_filename(s: &str) -> String {
-    s.chars()
-        .map(|c| match c {
-            '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|' => '_',
-            _ => c,
-        })
-        .collect()
-}
-
 fn download_audio(
     meta: SongMetadata,
     output_dir: &str,
@@ -352,7 +343,7 @@ fn download_audio(
             &format!(
                 "{}/{}.mp3",
                 output_dir,
-                safe_filename(&meta.id),
+                meta.id,
             ),
         ])
         .stdout(Stdio::from(log_file.try_clone().unwrap()))
