@@ -29,6 +29,7 @@ struct SongResponse {
     #[serde(rename = "artistString")]
     artist_string: String,
     name: String,
+    id: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -52,6 +53,7 @@ struct SongMetadata {
     main_picture: String,
     artist: String,
     name: String,
+    id: String,
 }
 
 fn extract_id(input: &str) -> Option<String> {
@@ -86,7 +88,7 @@ async fn get_metadata_for_video(url: String, service: &String) -> Result<SongMet
     );
 
     let client = reqwest::Client::builder()
-        .user_agent("vocaloid-downloader/1.0 (https://github.com/dot166/misc)")
+        .user_agent("vocaloid-downloader/1.1.0 (https://github.com/dot166/misc)")
         .build()
         .unwrap();
 
@@ -100,6 +102,7 @@ async fn get_metadata_for_video(url: String, service: &String) -> Result<SongMet
         main_picture: song.main_picture.url_original,
         artist: song.artist_string,
         name: song.name,
+        id: song.id,
     })
 }
 
@@ -110,7 +113,7 @@ async fn get_metadata_for_vocadb_id(id: &str) -> Result<SongMetadata, String> {
     );
 
     let client = reqwest::Client::builder()
-        .user_agent("vocaloid-downloader/1.0 (https://github.com/dot166/misc)")
+        .user_agent("vocaloid-downloader/1.1.0 (https://github.com/dot166/misc)")
         .build()
         .unwrap();
 
@@ -126,6 +129,7 @@ async fn get_metadata_for_vocadb_id(id: &str) -> Result<SongMetadata, String> {
         main_picture: song.main_picture.url_original,
         artist: song.artist_string,
         name: song.name,
+        id: id.to_string(),
     })
 }
 
@@ -346,10 +350,9 @@ fn download_audio(
             "-metadata:s:v", "comment=Cover (front)",
             "-metadata", "comment=Metadata from VocaDB (https://vocadb.net)",
             &format!(
-                "{}/{} - {}.mp3",
+                "{}/{}.mp3",
                 output_dir,
-                safe_filename(&meta.artist),
-                safe_filename(&meta.name),
+                safe_filename(&meta.id),
             ),
         ])
         .stdout(Stdio::from(log_file.try_clone().unwrap()))
