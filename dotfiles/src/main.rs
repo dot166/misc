@@ -46,13 +46,11 @@ fn main() -> Result<()> {
     setup_flatpak()?;
 
     if args.desktop {
-        install_android_tools()?;
         install_dev_stack()?;
         install_steam()?;
     }
 
     if args.laptop {
-        install_android_tools()?;
         install_libreoffice()?;
         Pkg::install(&["displaylink", "evdi-dkms", "kid3", "audacity", "openutau-bin"])?;
     }
@@ -163,8 +161,6 @@ fn install_base_packages() -> Result<()> {
         "ex-vi-compat",
         "rustup",
         "jdk17-openjdk",
-        "archiso-systemd-boot",
-        "systemd-boot-pacman-hook",
         "mikusays",
         "plymouth-theme-mikuboot-git",
         "mingw-w64-gcc",
@@ -228,7 +224,11 @@ fn install_gui() -> Result<()> {
         "kde-gtk-config",
         "fcitx5-im",
         "fcitx5-mozc-ut",
-        "mozc-ut"
+        "mozc-ut",
+        "android-studio",
+        "visual-studio-code-bin",
+        "android-tools",
+        "github-desktop-bin"
     ])?;
 
     run("sudo", &["systemctl", "enable", "plasmalogin"])?;
@@ -301,11 +301,6 @@ fn setup_flatpak() -> Result<()> {
     )
 }
 
-fn install_android_tools() -> Result<()> {
-    println!("[*] Installing Android Studio and VSCode...");
-    Pkg::install(&["android-studio", "visual-studio-code-bin", "android-tools", "github-desktop-bin"])
-}
-
 fn install_dev_stack() -> Result<()> {
     println!("[*] Installing GrapheneOS development tools...");
     Pkg::install(&["grapheneos-devel"])
@@ -319,7 +314,7 @@ fn install_steam() -> Result<()> {
 
 fn install_libreoffice() -> Result<()> {
     println!("[*] Installing LibreOffice...");
-    Pkg::install(&["libreoffice", "hunspell-en_gb", "hunspell"])
+    Pkg::install(&["libreoffice", "hunspell-en_gb", "hunspell", "hunspell-ja-git"])
 }
 
 fn install_server_components() -> Result<()> {
