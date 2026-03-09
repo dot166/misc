@@ -215,7 +215,6 @@ fn install_gui() -> Result<()> {
         "vlc",
         "linux-headers",
         "dkms",
-        "bluedevil",
         "powerdevil",
         "ark",
         "proton-pass-bin",
