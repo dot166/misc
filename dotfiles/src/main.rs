@@ -52,7 +52,7 @@ fn main() -> Result<()> {
 
     if args.laptop {
         install_libreoffice()?;
-        Pkg::install(&["displaylink", "evdi-dkms", "kid3", "audacity", "openutau-bin"])?;
+        Pkg::install(&["displaylink", "evdi-dkms", "kid3", "openutau-bin"])?;
     }
 
     if args.server {
@@ -162,11 +162,10 @@ fn install_base_packages() -> Result<()> {
         "rustup",
         "jdk17-openjdk",
         "mikusays",
-        "plymouth-theme-mikuboot-git",
         "mingw-w64-gcc",
         "dosfstools",
+        "thefuck"
     ])?;
-    run("sudo", &["plymouth-set-default-theme", "-R", "mikuboot"])?;
     Ok(())
 }
 
@@ -228,7 +227,10 @@ fn install_gui() -> Result<()> {
         "android-studio",
         "visual-studio-code-bin",
         "android-tools",
-        "github-desktop-bin"
+        "github-desktop-bin",
+        "kscreen",
+        "spectacle",
+        "sof-firmware"
     ])?;
 
     run("sudo", &["systemctl", "enable", "plasmalogin"])?;
