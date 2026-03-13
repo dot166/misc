@@ -226,7 +226,6 @@ fn install_gui() -> Result<()> {
         "mozc-ut",
         "android-studio",
         "visual-studio-code-bin",
-        "android-tools",
         "github-desktop-bin",
         "kscreen",
         "spectacle",
