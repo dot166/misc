@@ -230,7 +230,8 @@ fn install_gui() -> Result<()> {
         "github-desktop-bin",
         "kscreen",
         "spectacle",
-        "sof-firmware"
+        "sof-firmware",
+        "android-udev"
     ])?;
 
     run("sudo", &["systemctl", "enable", "plasmalogin"])?;
