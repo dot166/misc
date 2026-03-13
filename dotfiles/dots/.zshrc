@@ -6,7 +6,7 @@ figlet "Hello World!" -c | lolcat
 alias neofetch="hyfetch"
 
 # If you come from bash you might have to change your $PATH.
-export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$HOME/Android/Sdk/build-tools/36.1.0:$HOME/Android/Sdk/cmdline-tools/latest:$HOME/Android/Sdk/platform-tools:$PATH
+export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$HOME/Android/Sdk/build-tools/36.1.0:$HOME/Android/Sdk/cmdline-tools/latest/bin:$HOME/Android/Sdk/platform-tools:$PATH
 
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
