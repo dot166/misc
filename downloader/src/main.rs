@@ -88,7 +88,7 @@ async fn get_metadata_for_video(url: String, service: &String) -> Result<SongMet
     );
 
     let client = reqwest::Client::builder()
-        .user_agent("vocaloid-downloader/1.1.0 (https://github.com/dot166/misc)")
+        .user_agent("vocaloid-downloader/1.1.2 (https://github.com/dot166/misc)")
         .build()
         .unwrap();
 
@@ -113,7 +113,7 @@ async fn get_metadata_for_vocadb_id(id: &str) -> Result<SongMetadata, String> {
     );
 
     let client = reqwest::Client::builder()
-        .user_agent("vocaloid-downloader/1.1.0 (https://github.com/dot166/misc)")
+        .user_agent("vocaloid-downloader/1.1.2 (https://github.com/dot166/misc)")
         .build()
         .unwrap();
 
@@ -129,7 +129,7 @@ async fn get_metadata_for_vocadb_id(id: &str) -> Result<SongMetadata, String> {
         main_picture: song.main_picture.url_original,
         artist: song.artist_string,
         name: song.name,
-        id: id.parse().expect("Invalid ID"),
+        id: song.id,
     })
 }
 
@@ -339,7 +339,7 @@ fn download_audio(
             "-metadata", "genre=VOCALOID",
             "-metadata:s:v", "title=Album cover",
             "-metadata:s:v", "comment=Cover (front)",
-            "-metadata", "comment=Metadata from VocaDB (https://vocadb.net)",
+            "-metadata", &format!("comment=Metadata from VocaDB (https://vocadb.net), ID: {}", meta.id),
             &format!(
                 "{}/{}.mp3",
                 output_dir,
