@@ -248,6 +248,16 @@ fn main() {
             if status.is_err() {
                 panic!("Error fetching upstream tags for {}: {}", repo, status.unwrap_err());
             }
+
+            let status = Command::new("gh")
+                .arg("repo")
+                .arg("set-default")
+                .arg("origin")
+                .status();
+
+            if status.is_err() {
+                panic!("Error setting default github repo for {}: {}", repo, status.unwrap_err());
+            }
         }
 
         let status = env::set_current_dir("..");
@@ -534,6 +544,16 @@ fn main() {
             if status.is_err() {
                 panic!("Error fetching upstream tags for {}: {}", repo, status.unwrap_err());
             }
+
+            let status = Command::new("gh")
+                .arg("repo")
+                .arg("set-default")
+                .arg("origin")
+                .status();
+
+            if status.is_err() {
+                panic!("Error setting default github repo for {}: {}", repo, status.unwrap_err());
+            }
         }
 
         let status = env::set_current_dir("..");
@@ -783,6 +803,16 @@ fn main() {
 
             if status.is_err() {
                 panic!("Error fetching upstream tags for {}: {}", repo, status.unwrap_err());
+            }
+
+            let status = Command::new("gh")
+                .arg("repo")
+                .arg("set-default")
+                .arg("origin")
+                .status();
+
+            if status.is_err() {
+                panic!("Error setting default github repo for {}: {}", repo, status.unwrap_err());
             }
         }
 

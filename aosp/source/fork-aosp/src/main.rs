@@ -89,6 +89,15 @@ fn main() {
         .status()
         .expect("Failed to edit repository settings");
 
+    Command::new("gh")
+        .args([
+            "repo",
+            "set-default",
+            "origin",
+        ])
+        .status()
+        .expect("Failed to set the default github repo");
+
     // View repository on web
     Command::new("gh")
         .args(["repo", "view", "--web"])
