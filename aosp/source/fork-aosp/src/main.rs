@@ -66,8 +66,6 @@ fn main() {
             "--source",
             ".",
             &repo_name,
-            "-h",
-            "https://dot166.github.io/jOS/",
             "--disable-issues",
             "--disable-wiki",
         ])
