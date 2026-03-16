@@ -496,6 +496,36 @@ fn main() {
                     }
                 }
 
+                if repo == "platform_packages_inputmethods_LatinIME" {
+                    let status = Command::new("git")
+                        .arg("diff")
+                        .arg("--quiet")
+                        .arg("HEAD")
+                        .arg("origin")
+                        .status();
+
+                    let update_libmozc = if let Ok(status) = status {
+                        if status.success() {
+                            1
+                        } else {
+                            0
+                        }
+                    } else {
+                        0 // assume rebase if diff died
+                    };
+
+                    println!("MANUALLY_UPDATE_LIBMOZC={}", update_libmozc);
+
+                    // trigger libmozc.so update script if there is no changes in rebase, this means that libmozc.so and its data files will always be up to date
+                    if update_libmozc == 1 {
+                        let status = Command::new("gh")
+                            .arg("workflow")
+                            .arg("run")
+                            .arg("build.yml")
+                            .status();
+                    }
+                }
+
                 let status = Command::new("git")
                     .arg("push")
                     .arg("-f")
