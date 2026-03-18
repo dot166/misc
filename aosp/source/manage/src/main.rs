@@ -523,6 +523,10 @@ fn main() {
                             .arg("run")
                             .arg("build.yml")
                             .status();
+
+                        if status.is_err() {
+                            panic!("Error updating libmozc: {}", status.unwrap_err());
+                        }
                     }
                 }
 

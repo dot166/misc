@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use std::{env, fs, thread, time};
+use std::{env, fs};
 
 pub fn get_script_dir() -> Option<PathBuf> {
     let top_file = "build-android/.gitignore";
