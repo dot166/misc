@@ -50,6 +50,10 @@ fn main() {
         "platform_packages_services_telecomm",
     ];
 
+    let grapheneos_app_forks=[
+        "AppStore",
+    ];
+
     let lineageos_forks=[
         "platform_packages_apps_Recorder",
         "platform_packages_apps_Etar",
@@ -823,6 +827,119 @@ fn main() {
                 .arg("add")
                 .arg("upstream")
                 .arg(format!("https://github.com/LineageOS/{}", repo.replace("platform", "android")))
+                .status();
+
+            if status.is_err() {
+                panic!("Error adding upstream for {}: {}", repo, status.unwrap_err());
+            }
+
+            let status = Command::new("git")
+                .arg("fetch")
+                .arg("upstream")
+                .arg("--tags")
+                .status();
+
+            if status.is_err() {
+                panic!("Error fetching upstream tags for {}: {}", repo, status.unwrap_err());
+            }
+
+            let status = Command::new("gh")
+                .arg("repo")
+                .arg("set-default")
+                .arg("origin")
+                .status();
+
+            if status.is_err() {
+                panic!("Error setting default github repo for {}: {}", repo, status.unwrap_err());
+            }
+        }
+
+        let status = env::set_current_dir("..");
+        if status.is_err() {
+            panic!("Failed to change back to parent directory: {}", status.unwrap_err());
+        }
+    }
+
+
+
+    for repo in grapheneos_app_forks {
+        println!("\n>>> Handling {}", repo);
+
+        if action == "init" {
+            let status = Command::new("git")
+                .arg("clone")
+                .arg(format!("https://github.com/dot166/{}", repo))
+                .status();
+
+            if status.is_err() {
+                panic!("Error cloning {}: {}", repo, status.unwrap_err());
+            }
+        }
+
+        let status = env::set_current_dir(&repo);
+        if status.is_err() {
+            panic!("Failed to change directory to {}: {}", repo, status.unwrap_err());
+        }
+
+        let status = Command::new("git")
+            .arg("checkout")
+            .arg("main")
+            .status();
+
+        if status.is_err() {
+            panic!("Error checking out branch {}: {}", &branch, status.unwrap_err());
+        }
+
+        let status = Command::new("git")
+            .arg("pull")
+            .status();
+
+        if status.is_err() {
+            panic!("Error pulling changes for {}: {}", repo, status.unwrap_err());
+        }
+
+        match action.as_str() {
+            "update" => {
+                let status = Command::new("git")
+                    .arg("fetch")
+                    .arg("upstream")
+                    .arg("--tags")
+                    .arg("--force")
+                    .status();
+
+                if status.is_err() {
+                    panic!("Error fetching upstream tags: {}", status.unwrap_err());
+                }
+
+                let status = Command::new("git")
+                    .arg("rebase")
+                    .arg(scripts::get_latest_tag())
+                    .status();
+
+                if status.is_err() {
+                    panic!("Error rebasing {}: {}", repo, status.unwrap_err());
+                }
+
+                let status = Command::new("git")
+                    .arg("push")
+                    .arg("-f")
+                    .status();
+
+                if status.is_err() {
+                    panic!("Error pushing changes for {}: {}", repo, status.unwrap_err());
+                }
+            },
+            _ => {}
+        }
+
+        if action == "init" {
+            let remote_url = &format!("https://github.com/grapheneos/{}", repo);
+
+            let status = Command::new("git")
+                .arg("remote")
+                .arg("add")
+                .arg("upstream")
+                .arg(remote_url)
                 .status();
 
             if status.is_err() {

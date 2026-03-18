@@ -188,3 +188,34 @@ fn latest_lineage_branch() -> String {
         .cloned()
         .expect("No LineageOS branches found")
 }
+
+pub fn get_latest_tag() -> String {
+    let output = Command::new("git")
+        .args([
+            "ls-remote",
+            "--tags",
+            "upstream"
+        ])
+        .output()
+        .expect("Failed to query upstream tags");
+
+    let stdout = String::from_utf8(output.stdout)
+        .expect("Invalid UTF-8 from git");
+
+    let mut tags: Vec<i32> = stdout
+        .lines()
+        .filter_map(|line| {
+            line.split("refs/tags/")
+                .nth(1)
+                .map(|s| s.to_string())
+        })
+        .filter(|b| !b.ends_with("^{}"))
+        .map(|f| f.parse::<i32>().unwrap())
+        .collect(); // has to convert to int here so that it sorts as a number
+
+    tags.sort();
+    tags.last()
+        .cloned()
+        .expect("No upstream tags found")
+        .to_string()
+}
