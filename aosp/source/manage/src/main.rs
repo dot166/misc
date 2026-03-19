@@ -59,6 +59,7 @@ fn main() {
     ];
 
     let independent=[
+        "platform_external_AppStore",
         "platform_external_Music",
         "jOS-Updates",
     ];
