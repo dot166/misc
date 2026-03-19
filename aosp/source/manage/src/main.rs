@@ -30,8 +30,7 @@ fn main() {
     } else {
         panic!("unrecognized action");
     }
-    let aosp_forks=[
-        "platform_packages_apps_Music"
+    let aosp_forks: [&str; 0]=[
     ];
 
     let grapheneos_forks=[
@@ -60,6 +59,7 @@ fn main() {
     ];
 
     let independent=[
+        "platform_external_Music",
         "jOS-Updates",
     ];
 
