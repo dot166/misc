@@ -4,7 +4,6 @@ use std::process::Stdio;
 use std::path::Path;
 use std::path::PathBuf;
 use serde::Deserialize;
-use url::Url;
 use image::{Rgb, RgbImage};
 use imageproc::drawing::draw_text_mut;
 use ab_glyph::{FontArc, PxScale};
@@ -56,64 +55,14 @@ struct SongMetadata {
     id: i32,
 }
 
-fn extract_id(input: &str) -> Option<String> {
-    let url = Url::parse(input).ok()?;
-
-    match url.domain()? {
-        "www.nicovideo.jp" | "nicovideo.jp" => {
-            url.path_segments()?
-                .last()
-                .map(|s| s.to_string())
-        }
-        "www.youtube.com" | "youtube.com" | "youtu.be" => {
-            if url.domain()? == "youtu.be" {
-                url.path_segments()?
-                    .last()
-                    .map(|s| s.to_string())
-            } else {
-                url.query_pairs()
-                    .find(|(k, _)| k == "v")
-                    .map(|(_, v)| v.to_string())
-            }
-        }
-        _ => None,
-    }
-}
-
-async fn get_metadata_for_video(url: String, service: &String) -> Result<SongMetadata, String> {
-    let api_url = format!(
-        "https://vocadb.net/api/songs/byPv?pvService={}&pvId={}&fields=MainPicture,PVs",
-        service,
-        extract_id(&url).unwrap()
-    );
-
-    let client = reqwest::Client::builder()
-        .user_agent("vocaloid-downloader/1.1.2 (https://github.com/dot166/misc)")
-        .build()
-        .unwrap();
-
-    let json = get_cached_json(&api_url, &client).await?;
-    let song: SongResponse =
-        serde_json::from_str(&json)
-        .map_err(|e| format!("JSON parse error: {}", e))?;
-
-    Ok(SongMetadata {
-        url,
-        main_picture: song.main_picture.url_original,
-        artist: song.artist_string,
-        name: song.name,
-        id: song.id,
-    })
-}
-
-async fn get_metadata_for_vocadb_id(id: &str) -> Result<SongMetadata, String> {
+async fn get_metadata(id: &str) -> Result<SongMetadata, String> {
     let api_url = format!(
         "https://vocadb.net/api/songs/{}?fields=MainPicture,PVs",
         id
     );
 
     let client = reqwest::Client::builder()
-        .user_agent("vocaloid-downloader/1.1.2 (https://github.com/dot166/misc)")
+        .user_agent("vocaloid-downloader/1.2.0 (https://github.com/dot166/misc)")
         .build()
         .unwrap();
 
@@ -211,7 +160,7 @@ fn cache_valid(path: &Path) -> bool {
 fn vocadb_id_to_url(song: &SongResponse) -> Result<String, String> {
     // Prefer original NicoNico, then original YouTube
     for pv in &song.pvs {
-        if pv.pv_type == "Original" && pv.service == "NicoNicoDouga" {
+        if pv.pv_type == "Original" && pv.service == "NicoNicoDouga" && !is_blocked_pv(pv.pv_id.clone()) {
             return Ok(format!(
                 "https://www.nicovideo.jp/watch/{}",
                 pv.pv_id
@@ -220,7 +169,7 @@ fn vocadb_id_to_url(song: &SongResponse) -> Result<String, String> {
     }
 
     for pv in &song.pvs {
-        if pv.pv_type == "Original" && pv.service == "Youtube" {
+        if pv.pv_type == "Original" && pv.service == "Youtube" && !is_blocked_pv(pv.pv_id.clone()) {
             return Ok(format!(
                 "https://www.youtube.com/watch?v={}",
                 pv.pv_id
@@ -228,7 +177,36 @@ fn vocadb_id_to_url(song: &SongResponse) -> Result<String, String> {
         }
     }
 
-    Err("No original NicoNico or YouTube PV found".into())
+    println!("No original PVs found, falling back to other");
+
+    // Prefer original NicoNico, then original YouTube
+    for pv in &song.pvs {
+        if pv.pv_type == "Other" && pv.service == "NicoNicoDouga" && !is_blocked_pv(pv.pv_id.clone()) {
+            return Ok(format!(
+                "https://www.nicovideo.jp/watch/{}",
+                pv.pv_id
+            ));
+        }
+    }
+
+    for pv in &song.pvs {
+        if pv.pv_type == "Other" && pv.service == "Youtube" && !is_blocked_pv(pv.pv_id.clone()) {
+            return Ok(format!(
+                "https://www.youtube.com/watch?v={}",
+                pv.pv_id
+            ));
+        }
+    }
+
+    Err("No NicoNico or YouTube PV found".into())
+}
+
+fn is_blocked_pv(id: String) -> bool {
+    if id == "sm12276096" {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 
@@ -381,17 +359,7 @@ async fn process_song(
 
     bar.set_message("Resolving metadata");
 
-    let meta = if input.chars().all(|c| c.is_ascii_digit()) {
-        get_metadata_for_vocadb_id(&input).await
-    } else {
-        let service = if input.contains("nicovideo.jp") {
-            "NicoNicoDouga".to_string()
-        } else {
-            "Youtube".to_string()
-        };
-
-        get_metadata_for_video(input.clone(), &service).await
-    }?;
+    let meta = get_metadata(&input).await?;
 
     bar.set_message("Downloading cover");
 
@@ -448,7 +416,7 @@ async fn main() {
     let jobs: Vec<String> = contents
         .lines()
         .map(str::trim)
-        .filter(|l| !l.is_empty() && !l.starts_with('#'))
+        .filter(|l| !l.is_empty() && l.chars().all(|c| c.is_ascii_digit()))
         .map(String::from)
         .collect();
 

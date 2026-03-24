@@ -1,10 +1,9 @@
 [package]
 name = "downloader"
-version = "1.1.2"
+version = "1.2.0"
 edition = "2024"
 
 [dependencies]
-url = "2.5.8"
 dirs = "6.0.0"
 tokio = { version = "1.50.0", features = ["full"] }
 reqwest = { version = "0.12.28", features = ["json", "rustls-tls"] }
