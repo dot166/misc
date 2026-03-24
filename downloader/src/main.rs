@@ -425,7 +425,7 @@ async fn main() {
         .unwrap()
         .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]);
 
-    let max_parallel = num_cpus::get().min(4); // like a polite build system
+    let max_parallel = num_cpus::get().min(8); // like a polite build system
 
     let failures = Arc::new(AtomicUsize::new(0));
 
