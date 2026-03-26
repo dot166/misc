@@ -86,9 +86,59 @@ jobs:
         distribution: 'zulu'
         java-version: 17
         cache: 'gradle'
+    - name: Configure git
+      run: |
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions[bot]"
 
     - name: Build NightStand
       run: cd nightstand && chmod +x gradlew && ./gradlew assembleRelease
+    - name: Check if Release build
+      shell: sh
+      run: |
+        VERSION=$(jq '.elements[0].versionCode' nightstand/app/build/outputs/apk/release/output-metadata.json)
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        RELEASE=0 && git show-ref --tags --verify --quiet "refs/tags/nightstand-$VERSION" || RELEASE=1
+        echo "RELEASE=$RELEASE" >> $GITHUB_ENV
+    - name: send to repo and prebuilt
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' && env.RELEASE == '1' }}
+      run: |
+        cd nightstand
+        echo "${{ secrets.KEYSTORE }}" > a.txt
+        base64 -d a.txt > key.jks
+        echo "${{ secrets.KEYSTORE_PROPS }}" > b.txt
+        base64 -d b.txt > keystore.properties
+        ./gradlew assembleRelease # rebuild so it is actually signed
+        echo ${{ env.VERSION }}
+        mkdir -p artifacts/apps/packages/io.github.dot166.nightstand/${{ env.VERSION }}
+        echo "channel = \"stable"\" > artifacts/apps/packages/io.github.dot166.nightstand/${{ env.VERSION }}/channel.toml
+        cp app/build/outputs/apk/release/app-release.apk artifacts/apps/packages/io.github.dot166.nightstand/${{ env.VERSION }}/base.apk
+        cp app/build/outputs/apk/release/app-release.apk.idsig artifacts/apps/packages/io.github.dot166.nightstand/${{ env.VERSION }}/base.apk.idsig
+        git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/dot166/apks.git apks
+        cp -r artifacts/* apks/
+        cd apks
+        git add .
+        git commit -m "NightStand ${{ env.VERSION }}"
+        git push origin
+        cd ..
+        rm -rf artifacts
+        rm -rf apks
+        git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/dot166/platform_external_NightStand.git prebuilt
+        cp app/build/outputs/apk/release/app-release.apk prebuilt/prebuilt/
+        cp app/build/outputs/apk/release/app-release.apk.idsig prebuilt/prebuilt/
+        cd prebuilt
+        git add .
+        git commit -m "NightStand ${{ env.VERSION }}"
+        git push origin
+        cd ..
+        rm -rf prebuilt
+    - name: Upload to new Release
+      uses: softprops/action-gh-release@v2
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' && env.RELEASE == '1' }}
+      with:
+        tag_name: nightstand-${{ env.VERSION }}
+        make_latest: true
+        generate_release_notes: true
 
   ci-tool:
     needs: filter-paths
