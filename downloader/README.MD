@@ -29,7 +29,7 @@ Run via binary:
 $ ./downloader {path of file}
 ```
 
-You will also need a file that you put the URLs or IDs in, you can use [test-songs.txt](test-songs.txt) as an example of how it is formatted
+You will also need a file that you put the IDs in, you can use [test-songs.txt](test-songs.txt) as an example of how it is formatted
 
 ## License
 

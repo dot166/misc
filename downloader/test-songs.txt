@@ -1,4 +1,2 @@
-https://www.nicovideo.jp/watch/sm10282629
+# ルカルカ★ナイトフィーバー
 1435
-# do not try youtube in CI, google blocks it, use the niconico ones for testing the logic
-# https://www.youtube.com/watch?v=uVI6H0LYyzM&gl=JP
