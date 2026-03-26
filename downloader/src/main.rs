@@ -16,7 +16,6 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
 };
 use std::time::{Duration, SystemTime};
-use sha2::{Digest, Sha256};
 
 const CACHE_TTL: Duration = Duration::from_secs(60 * 60 * 24 * 30); // 30 days
 
@@ -62,7 +61,7 @@ async fn get_metadata(id: &str) -> Result<SongMetadata, String> {
     );
 
     let client = reqwest::Client::builder()
-        .user_agent("vocaloid-downloader/1.2.0 (https://github.com/dot166/misc)")
+        .user_agent("vocaloid-downloader/1.2.1 (https://github.com/dot166/misc)")
         .build()
         .unwrap();
 
@@ -139,9 +138,7 @@ async fn get_cached_json(api_url: &str, client: &reqwest::Client)
 }
 
 fn cache_path_for_url(url: &str) -> PathBuf {
-    let mut hasher = Sha256::new();
-    hasher.update(url.as_bytes());
-    let name = format!("{:x}.json", hasher.finalize());
+    let name = format!("{}.json", url);
 
     PathBuf::from(cache_dir()).join(name)
 }
