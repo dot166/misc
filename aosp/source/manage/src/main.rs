@@ -12,33 +12,48 @@ fn main() {
     println!("{}", graphene_tag_old);
     println!("{}", lineage_latest_branch);
     let args: Vec<String> = env::args().collect();
-    if args.len() == 1 { panic!("expected action as argument");}
-    let action= args[1].clone();
+    if args.len() == 1 {
+        panic!("expected action as argument");
+    }
+    let action = args[1].clone();
     let mut tag_name = "";
 
-    if action == "update" || action == "default" || action == "init" || action == "bupdate" || action == "null" {
+    if action == "update"
+        || action == "default"
+        || action == "init"
+        || action == "bupdate"
+        || action == "null"
+    {
         if env::var("IS_CI").unwrap_or("false".parse().unwrap()) == "true" && action != "init" {
-            panic!("cannot use {} in ci, this is done to prevent the ci from destroying the source tree", action);
+            panic!(
+                "cannot use {} in ci, this is done to prevent the ci from destroying the source tree",
+                action
+            );
         }
-        if args.len() != 2 {panic!("expected no arguments for $action");}
+        if args.len() != 2 {
+            panic!("expected no arguments for $action");
+        }
     } else if action == "release" || action == "delete" {
         if env::var("IS_CI").unwrap_or("false".parse().unwrap()) == "true" {
-            panic!("cannot use {} in ci, this is done to prevent the ci from destroying the source tree", action);
+            panic!(
+                "cannot use {} in ci, this is done to prevent the ci from destroying the source tree",
+                action
+            );
         }
         tag_name = &args[2];
-        if args.len() != 3 {panic!("expected tag name as argument for $action");}
+        if args.len() != 3 {
+            panic!("expected tag name as argument for $action");
+        }
     } else {
         panic!("unrecognized action");
     }
-    let aosp_forks: [&str; 0]=[
-    ];
+    let aosp_forks: [&str; 0] = [];
 
-    let grapheneos_forks=[
+    let grapheneos_forks = [
         "platform_build",
         "platform_build_release",
         "platform_frameworks_base",
         "platform_frameworks_libs_systemui",
-        "platform_manifest",
         "platform_packages_apps_DeskClock",
         "platform_packages_apps_Dialer",
         "platform_packages_apps_Launcher3",
@@ -49,20 +64,19 @@ fn main() {
         "platform_packages_services_telecomm",
     ];
 
-    let grapheneos_app_forks=[
-        "AppStore",
-    ];
+    let grapheneos_app_forks = ["AppStore"];
 
-    let lineageos_forks=[
+    let lineageos_forks = [
         "platform_packages_apps_Recorder",
         "platform_packages_apps_Etar",
     ];
 
-    let independent=[
+    let independent = [
         "platform_external_AppStore",
         "platform_external_FocusLock",
         "platform_external_Music",
         "platform_external_NightStand",
+        "platform_manifest",
         "jOS-Updates",
     ];
 
@@ -79,32 +93,39 @@ fn main() {
                 if status.is_err() {
                     panic!("Error cloning {}: {}", repo, status.unwrap_err());
                 }
-            },
+            }
             _ => {}
         }
 
         let status = env::set_current_dir(&repo);
         if status.is_err() {
-            panic!("Failed to change directory to {}: {}", repo, status.unwrap_err());
+            panic!(
+                "Failed to change directory to {}: {}",
+                repo,
+                status.unwrap_err()
+            );
         }
 
         match action.as_str() {
             "bupdate" => {
-                let status = Command::new("git")
-                    .arg("checkout")
-                    .arg("origin")
-                    .status();
+                let status = Command::new("git").arg("checkout").arg("origin").status();
 
                 if status.is_err() {
-                    panic!("Error checking out origin for {}: {}", repo, status.unwrap_err());
+                    panic!(
+                        "Error checking out origin for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
                 }
 
-                let status = Command::new("git")
-                    .arg("pull")
-                    .status();
+                let status = Command::new("git").arg("pull").status();
 
                 if status.is_err() {
-                    panic!("Error pulling changes for {}: {}", repo, status.unwrap_err());
+                    panic!(
+                        "Error pulling changes for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
                 }
 
                 let status = Command::new("git")
@@ -114,7 +135,11 @@ fn main() {
                     .status();
 
                 if status.is_err() {
-                    panic!("Error switching to branch {}: {}", &branch, status.unwrap_err());
+                    panic!(
+                        "Error switching to branch {}: {}",
+                        &branch,
+                        status.unwrap_err()
+                    );
                 }
 
                 let status = Command::new("git")
@@ -125,27 +150,34 @@ fn main() {
                     .status();
 
                 if status.is_err() {
-                    panic!("Error pushing {} to upstream: {}", &branch, status.unwrap_err());
+                    panic!(
+                        "Error pushing {} to upstream: {}",
+                        &branch,
+                        status.unwrap_err()
+                    );
                 }
-            },
+            }
             _ => {
-                let status = Command::new("git")
-                    .arg("checkout")
-                    .arg(&branch)
-                    .status();
+                let status = Command::new("git").arg("checkout").arg(&branch).status();
 
                 if status.is_err() {
-                    panic!("Error checking out branch {}: {}", &branch, status.unwrap_err());
+                    panic!(
+                        "Error checking out branch {}: {}",
+                        &branch,
+                        status.unwrap_err()
+                    );
                 }
             }
         }
 
-        let status = Command::new("git")
-            .arg("pull")
-            .status();
+        let status = Command::new("git").arg("pull").status();
 
         if status.is_err() {
-            panic!("Error pulling changes for {}: {}", repo, status.unwrap_err());
+            panic!(
+                "Error pulling changes for {}: {}",
+                repo,
+                status.unwrap_err()
+            );
         }
 
         match action.as_str() {
@@ -162,7 +194,7 @@ fn main() {
                     .arg("--delete")
                     .arg(tag_name)
                     .status();
-            },
+            }
             "release" => {
                 let status = Command::new("git")
                     .arg("tag")
@@ -173,7 +205,11 @@ fn main() {
                     .status();
 
                 if status.is_err() {
-                    panic!("Error creating release tag {}: {}", tag_name, status.unwrap_err());
+                    panic!(
+                        "Error creating release tag {}: {}",
+                        tag_name,
+                        status.unwrap_err()
+                    );
                 }
 
                 let status = Command::new("git")
@@ -183,9 +219,13 @@ fn main() {
                     .status();
 
                 if status.is_err() {
-                    panic!("Error pushing release tag {}: {}", tag_name, status.unwrap_err());
+                    panic!(
+                        "Error pushing release tag {}: {}",
+                        tag_name,
+                        status.unwrap_err()
+                    );
                 }
-            },
+            }
             "update" => {
                 let status = Command::new("git")
                     .arg("fetch")
@@ -209,15 +249,12 @@ fn main() {
                     panic!("Error rebasing: {}", status.unwrap_err());
                 }
 
-                let status = Command::new("git")
-                    .arg("push")
-                    .arg("-f")
-                    .status();
+                let status = Command::new("git").arg("push").arg("-f").status();
 
                 if status.is_err() {
                     panic!("Error pushing changes: {}", status.unwrap_err());
                 }
-            },
+            }
             "default" => {
                 let status = Command::new("gh")
                     .arg("repo")
@@ -228,9 +265,13 @@ fn main() {
                     .status();
 
                 if status.is_err() {
-                    panic!("Error editing default branch for {}: {}", repo, status.unwrap_err());
+                    panic!(
+                        "Error editing default branch for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
                 }
-            },
+            }
             _ => {}
         }
 
@@ -239,11 +280,18 @@ fn main() {
                 .arg("remote")
                 .arg("add")
                 .arg("upstream")
-                .arg(format!("https://android.googlesource.com/{}", repo.replace('_', "/")))
+                .arg(format!(
+                    "https://android.googlesource.com/{}",
+                    repo.replace('_', "/")
+                ))
                 .status();
 
             if status.is_err() {
-                panic!("Error adding upstream for {}: {}", repo, status.unwrap_err());
+                panic!(
+                    "Error adding upstream for {}: {}",
+                    repo,
+                    status.unwrap_err()
+                );
             }
 
             let status = Command::new("git")
@@ -253,7 +301,11 @@ fn main() {
                 .status();
 
             if status.is_err() {
-                panic!("Error fetching upstream tags for {}: {}", repo, status.unwrap_err());
+                panic!(
+                    "Error fetching upstream tags for {}: {}",
+                    repo,
+                    status.unwrap_err()
+                );
             }
 
             let status = Command::new("gh")
@@ -263,13 +315,20 @@ fn main() {
                 .status();
 
             if status.is_err() {
-                panic!("Error setting default github repo for {}: {}", repo, status.unwrap_err());
+                panic!(
+                    "Error setting default github repo for {}: {}",
+                    repo,
+                    status.unwrap_err()
+                );
             }
         }
 
         let status = env::set_current_dir("..");
         if status.is_err() {
-            panic!("Failed to change back to parent directory: {}", status.unwrap_err());
+            panic!(
+                "Failed to change back to parent directory: {}",
+                status.unwrap_err()
+            );
         }
     }
 
@@ -289,34 +348,42 @@ fn main() {
 
         let status = env::set_current_dir(&repo);
         if status.is_err() {
-            panic!("Failed to change directory to {}: {}", repo, status.unwrap_err());
+            panic!(
+                "Failed to change directory to {}: {}",
+                repo,
+                status.unwrap_err()
+            );
         }
 
         if action != "bupdate" {
-            let status = Command::new("git")
-                .arg("checkout")
-                .arg(&branch)
-                .status();
+            let status = Command::new("git").arg("checkout").arg(&branch).status();
 
             if status.is_err() {
-                panic!("Error checking out branch {}: {}", &branch, status.unwrap_err());
+                panic!(
+                    "Error checking out branch {}: {}",
+                    &branch,
+                    status.unwrap_err()
+                );
             }
         } else {
-            let status = Command::new("git")
-                .arg("checkout")
-                .arg("origin")
-                .status();
+            let status = Command::new("git").arg("checkout").arg("origin").status();
 
             if status.is_err() {
-                panic!("Error checking out origin for {}: {}", repo, status.unwrap_err());
+                panic!(
+                    "Error checking out origin for {}: {}",
+                    repo,
+                    status.unwrap_err()
+                );
             }
 
-            let status = Command::new("git")
-                .arg("pull")
-                .status();
+            let status = Command::new("git").arg("pull").status();
 
             if status.is_err() {
-                panic!("Error pulling changes for {}: {}", repo, status.unwrap_err());
+                panic!(
+                    "Error pulling changes for {}: {}",
+                    repo,
+                    status.unwrap_err()
+                );
             }
 
             let status = Command::new("git")
@@ -326,7 +393,11 @@ fn main() {
                 .status();
 
             if status.is_err() {
-                panic!("Error switching to branch {}: {}", &branch, status.unwrap_err());
+                panic!(
+                    "Error switching to branch {}: {}",
+                    &branch,
+                    status.unwrap_err()
+                );
             }
 
             let status = Command::new("git")
@@ -337,16 +408,22 @@ fn main() {
                 .status();
 
             if status.is_err() {
-                panic!("Error pushing {} to upstream: {}", &branch, status.unwrap_err());
+                panic!(
+                    "Error pushing {} to upstream: {}",
+                    &branch,
+                    status.unwrap_err()
+                );
             }
         }
 
-        let status = Command::new("git")
-            .arg("pull")
-            .status();
+        let status = Command::new("git").arg("pull").status();
 
         if status.is_err() {
-            panic!("Error pulling changes for {}: {}", repo, status.unwrap_err());
+            panic!(
+                "Error pulling changes for {}: {}",
+                repo,
+                status.unwrap_err()
+            );
         }
 
         match action.as_str() {
@@ -363,50 +440,8 @@ fn main() {
                     .arg("--delete")
                     .arg(tag_name)
                     .status();
-            },
+            }
             "release" => {
-                if repo == "platform_manifest" {
-                    let status = Command::new("git")
-                        .arg("checkout")
-                        .arg("-B")
-                        .arg("tmp")
-                        .status();
-
-                    if status.is_err() {
-                        panic!("Error checking out tmp branch for {}: {}", repo, status.unwrap_err());
-                    }
-
-                    let data = fs::read_to_string(env::current_dir().unwrap().join("default.xml")).unwrap();
-                    let new = data.replace(&branch, tag_name);
-                    let status = fs::write(env::current_dir().unwrap().join("default.xml"), &new);
-
-                    if status.is_err() {
-                        panic!("Error updating default.xml for {}: {}", repo, status.unwrap_err());
-                    }
-
-                    let status = Command::new("git")
-                        .arg("commit")
-                        .arg("default.xml")
-                        .arg("-m")
-                        .arg(tag_name)
-                        .status();
-
-                    if status.is_err() {
-                        panic!("Error committing default.xml for {}: {}", repo, status.unwrap_err());
-                    }
-
-                    let status = Command::new("git")
-                        .arg("push")
-                        .arg("-fu")
-                        .arg("origin")
-                        .arg("tmp")
-                        .status();
-
-                    if status.is_err() {
-                        panic!("Error pushing tmp branch for {}: {}", repo, status.unwrap_err());
-                    }
-                }
-
                 let status = Command::new("git")
                     .arg("tag")
                     .arg("-s")
@@ -416,7 +451,11 @@ fn main() {
                     .status();
 
                 if status.is_err() {
-                    panic!("Error creating release tag {}: {}", tag_name, status.unwrap_err());
+                    panic!(
+                        "Error creating release tag {}: {}",
+                        tag_name,
+                        status.unwrap_err()
+                    );
                 }
 
                 let status = Command::new("git")
@@ -426,9 +465,13 @@ fn main() {
                     .status();
 
                 if status.is_err() {
-                    panic!("Error pushing release tag {}: {}", tag_name, status.unwrap_err());
+                    panic!(
+                        "Error pushing release tag {}: {}",
+                        tag_name,
+                        status.unwrap_err()
+                    );
                 }
-            },
+            }
             "update" => {
                 let status = Command::new("git")
                     .arg("fetch")
@@ -441,66 +484,15 @@ fn main() {
                     panic!("Error fetching upstream tags: {}", status.unwrap_err());
                 }
 
-                if repo == "platform_manifest" {
-                    let status = Command::new("git")
-                        .arg("rebase")
-                        .arg("--onto")
-                        .arg(format!("{}~1", &graphene_tag))
-                        .arg(format!("{}~1", &graphene_tag_old))
-                        .status();
+                let status = Command::new("git")
+                    .arg("rebase")
+                    .arg("--onto")
+                    .arg(&graphene_tag)
+                    .arg(&graphene_tag_old)
+                    .status();
 
-                    if status.is_err() {
-                        panic!("Error rebasing {}: {}", repo, status.unwrap_err());
-                    }
-
-                    let data = fs::read_to_string(env::current_dir().unwrap().join("default.xml")).unwrap();
-                    let new = data.replace(&graphene_tag_old, &graphene_tag);
-                    let status = fs::write(env::current_dir().unwrap().join("default.xml"), &new);
-
-                    if status.is_err() {
-                        panic!("Error updating default.xml for {}: {}", "manifest", status.unwrap_err());
-                    }
-
-                    let status = Command::new("git")
-                        .arg("diff")
-                        .arg("--quiet")
-                        .status();
-
-                    let changes = if let Ok(status) = status {
-                        if status.success() {
-                            0
-                        } else {
-                            1
-                        }
-                    } else {
-                        1
-                    };
-
-                    println!("CHANGES={}", changes);
-
-                    if changes == 1 {
-                        let status = Command::new("git")
-                            .arg("commit")
-                            .arg("default.xml")
-                            .arg("-m")
-                            .arg(format!("GrapheneOS {}", &graphene_tag))
-                            .status();
-
-                        if status.is_err() {
-                            panic!("Error committing default.xml for {}: {}", repo, status.unwrap_err());
-                        }
-                    }
-                } else {
-                    let status = Command::new("git")
-                        .arg("rebase")
-                        .arg("--onto")
-                        .arg(&graphene_tag)
-                        .arg(&graphene_tag_old)
-                        .status();
-
-                    if status.is_err() {
-                        panic!("Error rebasing {}: {}", repo, status.unwrap_err());
-                    }
+                if status.is_err() {
+                    panic!("Error rebasing {}: {}", repo, status.unwrap_err());
                 }
 
                 if repo == "platform_packages_inputmethods_LatinIME" {
@@ -512,11 +504,7 @@ fn main() {
                         .status();
 
                     let update_libmozc = if let Ok(status) = status {
-                        if status.success() {
-                            1
-                        } else {
-                            0
-                        }
+                        if status.success() { 1 } else { 0 }
                     } else {
                         0 // assume rebase if diff died
                     };
@@ -537,15 +525,16 @@ fn main() {
                     }
                 }
 
-                let status = Command::new("git")
-                    .arg("push")
-                    .arg("-f")
-                    .status();
+                let status = Command::new("git").arg("push").arg("-f").status();
 
                 if status.is_err() {
-                    panic!("Error pushing changes for {}: {}", repo, status.unwrap_err());
+                    panic!(
+                        "Error pushing changes for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
                 }
-            },
+            }
             "default" => {
                 let status = Command::new("gh")
                     .arg("repo")
@@ -556,9 +545,13 @@ fn main() {
                     .status();
 
                 if status.is_err() {
-                    panic!("Error editing default branch for {}: {}", repo, status.unwrap_err());
+                    panic!(
+                        "Error editing default branch for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
                 }
-            },
+            }
             _ => {}
         }
 
@@ -573,7 +566,11 @@ fn main() {
                 .status();
 
             if status.is_err() {
-                panic!("Error adding upstream for {}: {}", repo, status.unwrap_err());
+                panic!(
+                    "Error adding upstream for {}: {}",
+                    repo,
+                    status.unwrap_err()
+                );
             }
 
             let status = Command::new("git")
@@ -583,7 +580,11 @@ fn main() {
                 .status();
 
             if status.is_err() {
-                panic!("Error fetching upstream tags for {}: {}", repo, status.unwrap_err());
+                panic!(
+                    "Error fetching upstream tags for {}: {}",
+                    repo,
+                    status.unwrap_err()
+                );
             }
 
             let status = Command::new("gh")
@@ -593,13 +594,20 @@ fn main() {
                 .status();
 
             if status.is_err() {
-                panic!("Error setting default github repo for {}: {}", repo, status.unwrap_err());
+                panic!(
+                    "Error setting default github repo for {}: {}",
+                    repo,
+                    status.unwrap_err()
+                );
             }
         }
 
         let status = env::set_current_dir("..");
         if status.is_err() {
-            panic!("Failed to change back to parent directory: {}", status.unwrap_err());
+            panic!(
+                "Failed to change back to parent directory: {}",
+                status.unwrap_err()
+            );
         }
     }
 
@@ -619,34 +627,42 @@ fn main() {
 
         let status = env::set_current_dir(&repo);
         if status.is_err() {
-            panic!("Failed to change directory to {}: {}", repo, status.unwrap_err());
+            panic!(
+                "Failed to change directory to {}: {}",
+                repo,
+                status.unwrap_err()
+            );
         }
 
         if action != "bupdate" {
-            let status = Command::new("git")
-                .arg("checkout")
-                .arg(&branch)
-                .status();
+            let status = Command::new("git").arg("checkout").arg(&branch).status();
 
             if status.is_err() {
-                panic!("Error checking out branch {}: {}", &branch, status.unwrap_err());
+                panic!(
+                    "Error checking out branch {}: {}",
+                    &branch,
+                    status.unwrap_err()
+                );
             }
         } else {
-            let status = Command::new("git")
-                .arg("checkout")
-                .arg("origin")
-                .status();
+            let status = Command::new("git").arg("checkout").arg("origin").status();
 
             if status.is_err() {
-                panic!("Error checking out origin for {}: {}", repo, status.unwrap_err());
+                panic!(
+                    "Error checking out origin for {}: {}",
+                    repo,
+                    status.unwrap_err()
+                );
             }
 
-            let status = Command::new("git")
-                .arg("pull")
-                .status();
+            let status = Command::new("git").arg("pull").status();
 
             if status.is_err() {
-                panic!("Error pulling changes for {}: {}", repo, status.unwrap_err());
+                panic!(
+                    "Error pulling changes for {}: {}",
+                    repo,
+                    status.unwrap_err()
+                );
             }
 
             let status = Command::new("git")
@@ -656,7 +672,11 @@ fn main() {
                 .status();
 
             if status.is_err() {
-                panic!("Error switching to branch {}: {}", &branch, status.unwrap_err());
+                panic!(
+                    "Error switching to branch {}: {}",
+                    &branch,
+                    status.unwrap_err()
+                );
             }
 
             let status = Command::new("git")
@@ -667,16 +687,22 @@ fn main() {
                 .status();
 
             if status.is_err() {
-                panic!("Error pushing {} to upstream: {}", &branch, status.unwrap_err());
+                panic!(
+                    "Error pushing {} to upstream: {}",
+                    &branch,
+                    status.unwrap_err()
+                );
             }
         }
 
-        let status = Command::new("git")
-            .arg("pull")
-            .status();
+        let status = Command::new("git").arg("pull").status();
 
         if status.is_err() {
-            panic!("Error pulling changes for {}: {}", repo, status.unwrap_err());
+            panic!(
+                "Error pulling changes for {}: {}",
+                repo,
+                status.unwrap_err()
+            );
         }
 
         match action.as_str() {
@@ -693,7 +719,7 @@ fn main() {
                     .arg("--delete")
                     .arg(tag_name)
                     .status();
-            },
+            }
             "release" => {
                 let status = Command::new("git")
                     .arg("tag")
@@ -704,7 +730,11 @@ fn main() {
                     .status();
 
                 if status.is_err() {
-                    panic!("Error creating release tag {}: {}", tag_name, status.unwrap_err());
+                    panic!(
+                        "Error creating release tag {}: {}",
+                        tag_name,
+                        status.unwrap_err()
+                    );
                 }
 
                 let status = Command::new("git")
@@ -714,14 +744,15 @@ fn main() {
                     .status();
 
                 if status.is_err() {
-                    panic!("Error pushing release tag {}: {}", tag_name, status.unwrap_err());
+                    panic!(
+                        "Error pushing release tag {}: {}",
+                        tag_name,
+                        status.unwrap_err()
+                    );
                 }
-            },
+            }
             "update" => {
-                let status = Command::new("git")
-                    .arg("fetch")
-                    .arg("upstream")
-                    .status();
+                let status = Command::new("git").arg("fetch").arg("upstream").status();
 
                 if status.is_err() {
                     panic!("Error fetching upstream: {}", status.unwrap_err());
@@ -733,81 +764,19 @@ fn main() {
                     .status();
 
                 if rebase_status.is_err() {
-                    panic!("Error during rebase for {}: {}", repo, rebase_status.unwrap_err());
+                    panic!(
+                        "Error during rebase for {}: {}",
+                        repo,
+                        rebase_status.unwrap_err()
+                    );
                 }
 
-                //let rebase_status = Command::new("git")
-                //    .arg("rebase")
-                //    .arg("--onto")
-                //    .arg(format!("upstream/{}", lineage_latest_branch))
-                //    .arg(fs::read_to_string("upstream-cm-commit").expect("Failed to read lineage commit").replace("\n", ""))
-                //    .status();
-
-                //if rebase_status.is_err() {
-                //    panic!("Error during rebase for {}: {}", repo, rebase_status.unwrap_err());
-                //}
-
-                //fs::remove_file("upstream-cm-commit").expect("Failed to remove upstream-lineage-commit file");
-
-                //let rev_parse_status = Command::new("git")
-                //    .arg("rev-parse")
-                //    .arg("--verify")
-                //    .arg(format!("upstream/{}", lineage_latest_branch))
-                //    .output();
-
-                //if rev_parse_status.is_ok() {
-                //    fs::write("upstream-cm-commit", rev_parse_status.unwrap().stdout).expect("Failed to write lineage commit to file");
-                //} else {
-                //    panic!("Error getting commit hash for {}: {}", repo, rev_parse_status.unwrap_err());
-                //}
-
-                //let status = Command::new("git")
-                //    .arg("diff")
-                //    .arg("--quiet")
-                //    .status();
-
-                //let changes = if let Ok(status) = status {
-                //    if status.success() {
-                //        0
-                //    } else {
-                //        1
-                //    }
-                //} else {
-                //    1
-                //};
-
-                //println!("CHANGES={}", changes);
-
-                //if changes == 1 {
-                //    let status = Command::new("git")
-                //        .arg("add")
-                //        .arg(".")
-                //        .status();
-
-                //    if status.is_err() {
-                //        panic!("Error staging changes: {}", status.unwrap_err());
-                //    }
-
-                //    let status = Command::new("git")
-                //        .arg("commit")
-                //        .arg("-m")
-                //        .arg("update to a newer lineage commit")
-                //        .status();
-
-                //    if status.is_err() {
-                //        panic!("Error committing changes: {}", status.unwrap_err());
-                //    }
-                //}
-
-                let status = Command::new("git")
-                    .arg("push")
-                    .arg("-f")
-                    .status();
+                let status = Command::new("git").arg("push").arg("-f").status();
 
                 if status.is_err() {
                     panic!("Error pushing changes: {}", status.unwrap_err());
                 }
-            },
+            }
             "default" => {
                 let status = Command::new("gh")
                     .arg("repo")
@@ -818,9 +787,13 @@ fn main() {
                     .status();
 
                 if status.is_err() {
-                    panic!("Error editing default branch for {}: {}", repo, status.unwrap_err());
+                    panic!(
+                        "Error editing default branch for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
                 }
-            },
+            }
             _ => {}
         }
 
@@ -829,11 +802,18 @@ fn main() {
                 .arg("remote")
                 .arg("add")
                 .arg("upstream")
-                .arg(format!("https://github.com/LineageOS/{}", repo.replace("platform", "android")))
+                .arg(format!(
+                    "https://github.com/LineageOS/{}",
+                    repo.replace("platform", "android")
+                ))
                 .status();
 
             if status.is_err() {
-                panic!("Error adding upstream for {}: {}", repo, status.unwrap_err());
+                panic!(
+                    "Error adding upstream for {}: {}",
+                    repo,
+                    status.unwrap_err()
+                );
             }
 
             let status = Command::new("git")
@@ -843,7 +823,11 @@ fn main() {
                 .status();
 
             if status.is_err() {
-                panic!("Error fetching upstream tags for {}: {}", repo, status.unwrap_err());
+                panic!(
+                    "Error fetching upstream tags for {}: {}",
+                    repo,
+                    status.unwrap_err()
+                );
             }
 
             let status = Command::new("gh")
@@ -853,13 +837,20 @@ fn main() {
                 .status();
 
             if status.is_err() {
-                panic!("Error setting default github repo for {}: {}", repo, status.unwrap_err());
+                panic!(
+                    "Error setting default github repo for {}: {}",
+                    repo,
+                    status.unwrap_err()
+                );
             }
         }
 
         let status = env::set_current_dir("..");
         if status.is_err() {
-            panic!("Failed to change back to parent directory: {}", status.unwrap_err());
+            panic!(
+                "Failed to change back to parent directory: {}",
+                status.unwrap_err()
+            );
         }
     }
 
@@ -879,24 +870,27 @@ fn main() {
 
         let status = env::set_current_dir(&repo);
         if status.is_err() {
-            panic!("Failed to change directory to {}: {}", repo, status.unwrap_err());
+            panic!(
+                "Failed to change directory to {}: {}",
+                repo,
+                status.unwrap_err()
+            );
         }
 
-        let status = Command::new("git")
-            .arg("checkout")
-            .arg("main")
-            .status();
+        let status = Command::new("git").arg("checkout").arg("main").status();
 
         if status.is_err() {
             panic!("Error checking out main: {}", status.unwrap_err());
         }
 
-        let status = Command::new("git")
-            .arg("pull")
-            .status();
+        let status = Command::new("git").arg("pull").status();
 
         if status.is_err() {
-            panic!("Error pulling changes for {}: {}", repo, status.unwrap_err());
+            panic!(
+                "Error pulling changes for {}: {}",
+                repo,
+                status.unwrap_err()
+            );
         }
 
         match action.as_str() {
@@ -921,15 +915,16 @@ fn main() {
                     panic!("Error rebasing {}: {}", repo, status.unwrap_err());
                 }
 
-                let status = Command::new("git")
-                    .arg("push")
-                    .arg("-f")
-                    .status();
+                let status = Command::new("git").arg("push").arg("-f").status();
 
                 if status.is_err() {
-                    panic!("Error pushing changes for {}: {}", repo, status.unwrap_err());
+                    panic!(
+                        "Error pushing changes for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
                 }
-            },
+            }
             _ => {}
         }
 
@@ -944,7 +939,11 @@ fn main() {
                 .status();
 
             if status.is_err() {
-                panic!("Error adding upstream for {}: {}", repo, status.unwrap_err());
+                panic!(
+                    "Error adding upstream for {}: {}",
+                    repo,
+                    status.unwrap_err()
+                );
             }
 
             let status = Command::new("git")
@@ -954,7 +953,11 @@ fn main() {
                 .status();
 
             if status.is_err() {
-                panic!("Error fetching upstream tags for {}: {}", repo, status.unwrap_err());
+                panic!(
+                    "Error fetching upstream tags for {}: {}",
+                    repo,
+                    status.unwrap_err()
+                );
             }
 
             let status = Command::new("gh")
@@ -964,13 +967,20 @@ fn main() {
                 .status();
 
             if status.is_err() {
-                panic!("Error setting default github repo for {}: {}", repo, status.unwrap_err());
+                panic!(
+                    "Error setting default github repo for {}: {}",
+                    repo,
+                    status.unwrap_err()
+                );
             }
         }
 
         let status = env::set_current_dir("..");
         if status.is_err() {
-            panic!("Failed to change back to parent directory: {}", status.unwrap_err());
+            panic!(
+                "Failed to change back to parent directory: {}",
+                status.unwrap_err()
+            );
         }
     }
 
@@ -990,35 +1000,43 @@ fn main() {
 
         let status = env::set_current_dir(&repo);
         if status.is_err() {
-            panic!("Failed to change directory to {}: {}", repo, status.unwrap_err());
+            panic!(
+                "Failed to change directory to {}: {}",
+                repo,
+                status.unwrap_err()
+            );
         }
 
         if repo != "jOS-Updates" {
             if action != "bupdate" {
-                let status = Command::new("git")
-                    .arg("checkout")
-                    .arg(&branch)
-                    .status();
+                let status = Command::new("git").arg("checkout").arg(&branch).status();
 
                 if status.is_err() {
-                    panic!("Error checking out branch {}: {}", branch, status.unwrap_err());
+                    panic!(
+                        "Error checking out branch {}: {}",
+                        branch,
+                        status.unwrap_err()
+                    );
                 }
             } else {
-                let status = Command::new("git")
-                    .arg("checkout")
-                    .arg("origin")
-                    .status();
+                let status = Command::new("git").arg("checkout").arg("origin").status();
 
                 if status.is_err() {
-                    panic!("Error checking out origin for {}: {}", repo, status.unwrap_err());
+                    panic!(
+                        "Error checking out origin for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
                 }
 
-                let status = Command::new("git")
-                    .arg("pull")
-                    .status();
+                let status = Command::new("git").arg("pull").status();
 
                 if status.is_err() {
-                    panic!("Error pulling changes for {}: {}", repo, status.unwrap_err());
+                    panic!(
+                        "Error pulling changes for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
                 }
 
                 let status = Command::new("git")
@@ -1028,7 +1046,11 @@ fn main() {
                     .status();
 
                 if status.is_err() {
-                    panic!("Error switching to branch {}: {}", &branch, status.unwrap_err());
+                    panic!(
+                        "Error switching to branch {}: {}",
+                        &branch,
+                        status.unwrap_err()
+                    );
                 }
 
                 let status = Command::new("git")
@@ -1039,26 +1061,33 @@ fn main() {
                     .status();
 
                 if status.is_err() {
-                    panic!("Error pushing {} to upstream: {}", branch, status.unwrap_err());
+                    panic!(
+                        "Error pushing {} to upstream: {}",
+                        branch,
+                        status.unwrap_err()
+                    );
                 }
             }
         } else {
-            let status = Command::new("git")
-                .arg("checkout")
-                .arg("main")
-                .status();
+            let status = Command::new("git").arg("checkout").arg("main").status();
 
             if status.is_err() {
-                panic!("Error checking out main for {}: {}", repo, status.unwrap_err());
+                panic!(
+                    "Error checking out main for {}: {}",
+                    repo,
+                    status.unwrap_err()
+                );
             }
         }
 
-        let status = Command::new("git")
-            .arg("pull")
-            .status();
+        let status = Command::new("git").arg("pull").status();
 
         if status.is_err() {
-            panic!("Error pulling changes for {}: {}", repo, status.unwrap_err());
+            panic!(
+                "Error pulling changes for {}: {}",
+                repo,
+                status.unwrap_err()
+            );
         }
 
         match action.as_str() {
@@ -1075,10 +1104,13 @@ fn main() {
                     .arg("--delete")
                     .arg(tag_name)
                     .status();
-            },
+            }
             "release" => {
                 if repo == "jOS-Updates" {
-                    let release_dir = format!("../../grapheneos/releases/{}/release-felix-{}/", tag_name, tag_name);
+                    let release_dir = format!(
+                        "../../grapheneos/releases/{}/release-felix-{}/",
+                        tag_name, tag_name
+                    );
                     let status = Command::new("cp")
                         .arg("-T")
                         .arg(format!("{}felix-stable", release_dir))
@@ -1086,13 +1118,14 @@ fn main() {
                         .status();
 
                     if status.is_err() {
-                        panic!("Error copying stable release for {}: {}", repo, status.unwrap_err());
+                        panic!(
+                            "Error copying stable release for {}: {}",
+                            repo,
+                            status.unwrap_err()
+                        );
                     }
 
-                    let status = Command::new("git")
-                        .arg("add")
-                        .arg(".")
-                        .status();
+                    let status = Command::new("git").arg("add").arg(".").status();
 
                     if status.is_err() {
                         panic!("Error adding files for {}: {}", repo, status.unwrap_err());
@@ -1105,15 +1138,21 @@ fn main() {
                         .status();
 
                     if status.is_err() {
-                        panic!("Error committing files for {}: {}", repo, status.unwrap_err());
+                        panic!(
+                            "Error committing files for {}: {}",
+                            repo,
+                            status.unwrap_err()
+                        );
                     }
 
-                    let status = Command::new("git")
-                        .arg("push")
-                        .status();
+                    let status = Command::new("git").arg("push").status();
 
                     if status.is_err() {
-                        panic!("Error pushing changes for {}: {}", repo, status.unwrap_err());
+                        panic!(
+                            "Error pushing changes for {}: {}",
+                            repo,
+                            status.unwrap_err()
+                        );
                     }
 
                     let status = Command::new("gh")
@@ -1128,9 +1167,77 @@ fn main() {
                         .status();
 
                     if status.is_err() {
-                        panic!("Error creating release for {}: {}", repo, status.unwrap_err());
+                        panic!(
+                            "Error creating release for {}: {}",
+                            repo,
+                            status.unwrap_err()
+                        );
                     }
                 } else {
+                    if repo == "platform_manifest" {
+                        let status = Command::new("git")
+                            .arg("checkout")
+                            .arg("-B")
+                            .arg("tmp")
+                            .status();
+
+                        if status.is_err() {
+                            panic!(
+                                "Error checking out tmp branch for {}: {}",
+                                repo,
+                                status.unwrap_err()
+                            );
+                        }
+
+                        let data =
+                            fs::read_to_string(env::current_dir().unwrap().join("default.xml"))
+                                .unwrap();
+                        let mut from = "heads/".to_string();
+                        let mut to = "tags/".to_string();
+                        from.push_str(&branch);
+                        to.push_str(tag_name);
+                        let new = data.replace(&from, &to);
+                        let status =
+                            fs::write(env::current_dir().unwrap().join("default.xml"), &new);
+
+                        if status.is_err() {
+                            panic!(
+                                "Error updating default.xml for {}: {}",
+                                repo,
+                                status.unwrap_err()
+                            );
+                        }
+
+                        let status = Command::new("git")
+                            .arg("commit")
+                            .arg("default.xml")
+                            .arg("-m")
+                            .arg(tag_name)
+                            .status();
+
+                        if status.is_err() {
+                            panic!(
+                                "Error committing default.xml for {}: {}",
+                                repo,
+                                status.unwrap_err()
+                            );
+                        }
+
+                        let status = Command::new("git")
+                            .arg("push")
+                            .arg("-fu")
+                            .arg("origin")
+                            .arg("tmp")
+                            .status();
+
+                        if status.is_err() {
+                            panic!(
+                                "Error pushing tmp branch for {}: {}",
+                                repo,
+                                status.unwrap_err()
+                            );
+                        }
+                    }
                     let status = Command::new("git")
                         .arg("tag")
                         .arg("-s")
@@ -1153,7 +1260,7 @@ fn main() {
                         panic!("Error pushing tag {}: {}", repo, status.unwrap_err());
                     }
                 }
-            },
+            }
             "default" => {
                 if repo != "jOS-Updates" {
                     let status = Command::new("gh")
@@ -1165,31 +1272,34 @@ fn main() {
                         .status();
 
                     if status.is_err() {
-                        panic!("Error editing default branch for {}: {}", repo, status.unwrap_err());
+                        panic!(
+                            "Error editing default branch for {}: {}",
+                            repo,
+                            status.unwrap_err()
+                        );
                     }
                 }
-            },
+            }
             _ => {}
         }
 
         let status = env::set_current_dir("..");
         if status.is_err() {
-            panic!("Failed to change back to parent directory: {}", status.unwrap_err());
+            panic!(
+                "Failed to change back to parent directory: {}",
+                status.unwrap_err()
+            );
         }
     }
 
     if action == "bupdate" {
-        let status = Command::new("script/jOS/manage")
-            .arg("update")
-            .status();
+        let status = Command::new("script/jOS/manage").arg("update").status();
 
         if status.is_err() {
             panic!("Error running update: {}", status.unwrap_err());
         }
 
-        let status = Command::new("script/jOS/manage")
-            .arg("default")
-            .status();
+        let status = Command::new("script/jOS/manage").arg("default").status();
 
         if status.is_err() {
             panic!("Error running default: {}", status.unwrap_err());
