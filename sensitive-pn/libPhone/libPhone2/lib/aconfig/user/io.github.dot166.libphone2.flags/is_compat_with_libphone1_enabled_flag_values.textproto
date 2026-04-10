@@ -1,0 +1,6 @@
+flag_value {
+  package: "io.github.dot166.libphone2.flags"
+  name: "is_compat_with_libphone1_enabled"
+  state: ENABLED
+  permission: READ_ONLY
+}

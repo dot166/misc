@@ -1,0 +1,9 @@
+package: "io.github.dot166.libphone2.flags"
+container: "system"
+
+flag {
+    name: "is_compat_with_libphone1_enabled"
+    namespace: "libphone2"
+    description: "allows backwards compatibility with the original libPhone"
+    bug: "<none>"
+}

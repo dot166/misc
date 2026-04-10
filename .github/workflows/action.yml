@@ -5,155 +5,137 @@ on: [push, pull_request, workflow_dispatch]
 env:
   CARGO_TERM_COLOR: always
   GH_AUTH_TOKEN: ${{ secrets.GH_TOKEN }} # setting GH_TOKEN for the entire workflow
+  ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_USERNAME }}
+  ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_PASSWD }}
+  ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY }}
+  ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_PASSWD }}
 
 jobs:
-  filter-paths:
+  build-it-all:
     runs-on: ubuntu-latest
-    outputs:
-      downloader_modified: ${{ steps.filter.outputs.downloader_modified }}
-      utau_stuff_modified: ${{ steps.filter.outputs.utau_stuff_modified }}
-      nightstand_modified: ${{ steps.filter.outputs.nightstand_modified }}
-      aosp_modified: ${{ steps.filter.outputs.aosp_modified }}
-    steps:
-    - uses: actions/checkout@v6
-    - uses: dorny/paths-filter@v4
-      id: filter
-      with:
-        filters: |
-          downloader_modified:
-            - 'downloader/**'
-            - '.github/**'
-          utau_stuff_modified:
-            - 'UTAU/**'
-            - '.github/**'
-          nightstand_modified:
-            - 'nightstand/**'
-            - '.github/**'
-          aosp_modified:
-            - 'aosp/source/**'
-            - '.github/**'
-
-  test_downloader:
-    needs: filter-paths
-    if: needs.filter-paths.outputs.downloader_modified == 'true'
-    runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
         with:
-          fetch-depth: 0
+          fetch-depth: 1
+          fetch-tags: true
 
       - name: Setup yt-dlp
         uses: AnimMouse/setup-yt-dlp@v3
 
       - name: Test Downloader
         run: cd downloader && cargo run ./test-songs.txt
-
-  test_libmomone:
-    needs: filter-paths
-    if: needs.filter-paths.outputs.utau_stuff_modified == 'true'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
       - name: Test LibMomone
         run: cd UTAU/libmomone && cargo test
+      - name: Setup JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: 17
+          cache: 'gradle'
+      - name: Configure git
+        run: |
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
 
-  build_nightstand:
-    needs: filter-paths
-    if: needs.filter-paths.outputs.nightstand_modified == 'true'
-    runs-on: ubuntu-latest
-    env:
-      ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_USERNAME }}
-      ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_PASSWD }}
-      ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY }}
-      ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_PASSWD }}
-
-    steps:
-    - name: Checkout repo
-      uses: actions/checkout@v6
-      with:
-        fetch-depth: 1
-        fetch-tags: true
+      - name: Build NightStand
+        run: cd nightstand && chmod +x gradlew && ./gradlew assembleRelease
+      - name: Check if Release build
+        shell: sh
+        run: |
+          VERSION=$(jq '.elements[0].versionCode' nightstand/app/build/outputs/apk/release/output-metadata.json)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          RELEASE=0 && git show-ref --tags --verify --quiet "refs/tags/nightstand-$VERSION" || RELEASE=1
+          echo "RELEASE=$RELEASE" >> $GITHUB_ENV
+      - name: send to repo and prebuilt
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' && env.RELEASE == '1' }}
+        run: |
+          cd nightstand
+          echo "${{ secrets.KEYSTORE }}" > a.txt
+          base64 -d a.txt > key.jks
+          echo "${{ secrets.KEYSTORE_PROPS }}" > b.txt
+          base64 -d b.txt > keystore.properties
+          ./gradlew assembleRelease # rebuild so it is actually signed
+          echo ${{ env.VERSION }}
+          mkdir -p artifacts/apps/packages/io.github.dot166.nightstand/${{ env.VERSION }}
+          echo "channel = \"stable"\" > artifacts/apps/packages/io.github.dot166.nightstand/${{ env.VERSION }}/channel.toml
+          cp app/build/outputs/apk/release/app-release.apk artifacts/apps/packages/io.github.dot166.nightstand/${{ env.VERSION }}/base.apk
+          cp app/build/outputs/apk/release/app-release.apk.idsig artifacts/apps/packages/io.github.dot166.nightstand/${{ env.VERSION }}/base.apk.idsig
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/dot166/apks.git apks
+          cp -r artifacts/* apks/
+          cd apks
+          git add .
+          git commit -m "NightStand ${{ env.VERSION }}"
+          git push origin
+          cd ..
+          rm -rf artifacts
+          rm -rf apks
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/dot166/platform_external_NightStand.git prebuilt
+          cp app/build/outputs/apk/release/app-release.apk prebuilt/prebuilt/
+          cp app/build/outputs/apk/release/app-release.apk.idsig prebuilt/prebuilt/
+          cd prebuilt
+          git add .
+          git commit -m "NightStand ${{ env.VERSION }}"
+          git push origin
+          cd ..
+          rm -rf prebuilt
+          rm -rf a.txt
+          rm -rf b.txt
+          rm -rf key.jks
+          rm -rf keystore.properties
+      - name: Upload to new Release
+        uses: softprops/action-gh-release@v2
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' && env.RELEASE == '1' }}
+        with:
+          tag_name: nightstand-${{ env.VERSION }}
+          make_latest: true
+          generate_release_notes: true
+      - name: Run CI Tool
+        run: |
+         cd aosp/source/ci-tool
+         cargo update
+         cargo run --release
     
-    - name: Setup JDK 17
-      uses: actions/setup-java@v5
-      with:
-        distribution: 'zulu'
-        java-version: 17
-        cache: 'gradle'
-    - name: Configure git
-      run: |
-        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git config --global user.name "github-actions[bot]"
+      - name: Update Helpline List
+        run: |
+          cd sensitive-pn/etc
+          curl -O https://raw.githubusercontent.com/LineageOS/android_vendor_lineage/refs/heads/lineage-23.2/prebuilt/common/etc/sensitive_pn.xml
+          cd ../../..
 
-    - name: Build NightStand
-      run: cd nightstand && chmod +x gradlew && ./gradlew assembleRelease
-    - name: Check if Release build
-      shell: sh
-      run: |
-        VERSION=$(jq '.elements[0].versionCode' nightstand/app/build/outputs/apk/release/output-metadata.json)
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-        RELEASE=0 && git show-ref --tags --verify --quiet "refs/tags/nightstand-$VERSION" || RELEASE=1
-        echo "RELEASE=$RELEASE" >> $GITHUB_ENV
-    - name: send to repo and prebuilt
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' && env.RELEASE == '1' }}
-      run: |
-        cd nightstand
-        echo "${{ secrets.KEYSTORE }}" > a.txt
-        base64 -d a.txt > key.jks
-        echo "${{ secrets.KEYSTORE_PROPS }}" > b.txt
-        base64 -d b.txt > keystore.properties
-        ./gradlew assembleRelease # rebuild so it is actually signed
-        echo ${{ env.VERSION }}
-        mkdir -p artifacts/apps/packages/io.github.dot166.nightstand/${{ env.VERSION }}
-        echo "channel = \"stable"\" > artifacts/apps/packages/io.github.dot166.nightstand/${{ env.VERSION }}/channel.toml
-        cp app/build/outputs/apk/release/app-release.apk artifacts/apps/packages/io.github.dot166.nightstand/${{ env.VERSION }}/base.apk
-        cp app/build/outputs/apk/release/app-release.apk.idsig artifacts/apps/packages/io.github.dot166.nightstand/${{ env.VERSION }}/base.apk.idsig
-        git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/dot166/apks.git apks
-        cp -r artifacts/* apks/
-        cd apks
-        git add .
-        git commit -m "NightStand ${{ env.VERSION }}"
-        git push origin
-        cd ..
-        rm -rf artifacts
-        rm -rf apks
-        git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/dot166/platform_external_NightStand.git prebuilt
-        cp app/build/outputs/apk/release/app-release.apk prebuilt/prebuilt/
-        cp app/build/outputs/apk/release/app-release.apk.idsig prebuilt/prebuilt/
-        cd prebuilt
-        git add .
-        git commit -m "NightStand ${{ env.VERSION }}"
-        git push origin
-        cd ..
-        rm -rf prebuilt
-    - name: Upload to new Release
-      uses: softprops/action-gh-release@v2
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' && env.RELEASE == '1' }}
-      with:
-        tag_name: nightstand-${{ env.VERSION }}
-        make_latest: true
-        generate_release_notes: true
+      - name: Commit changes
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' }}
+        run: |
+          git add .
+          git commit -m "Update Helpline List" || true
 
-  ci-tool:
-    needs: filter-paths
-    if: needs.filter-paths.outputs.aosp_modified == 'true'
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v6
-    - name: Configure git
-      run: |
-        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git config --global user.name "github-actions[bot]"
-    - name: Run CI Tool
-      run: |
-       cd aosp/source/ci-tool
-       cargo update
-       cargo run --release
+      - name: Build libPhone2
+        run: cd sensitive-pn/libPhone/libPhone2 && chmod +x gradlew && ./gradlew assembleRelease
+      - name: Check if Release build
+        shell: sh
+        run: |
+          VERSION=$(jq '.elements[0].versionCode' sensitive-pn/libPhone/libPhone2/lib/build/outputs/apk/release/output-metadata.json)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          RELEASE=0 && git show-ref --tags --verify --quiet "refs/tags/libPhone2-$VERSION" || RELEASE=1
+          echo "RELEASE=$RELEASE" >> $GITHUB_ENV
+
+      - name: publish libPhone2
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' && env.RELEASE == '1' }}
+        run: |
+          cd sensitive-pn/libPhone/libPhone2
+          echo ${{ env.VERSION }}
+          ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
+
+      - name: Push changes to repo
+        uses: ad-m/github-push-action@master
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' }}
+        with:
+          branch: ${{ github.ref }}
+    
+      - name: Upload to new Release
+        uses: softprops/action-gh-release@v2
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' && env.RELEASE == '1' }}
+        with:
+          tag_name: libPhone2-${{ env.VERSION }}
+          make_latest: true
+          generate_release_notes: true
 
