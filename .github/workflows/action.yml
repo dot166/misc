@@ -89,7 +89,7 @@ jobs:
           rm -rf key.jks
           rm -rf keystore.properties
       - name: Upload to new Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' && env.RELEASE == '1' }}
         with:
           tag_name: nightstand-${{ env.VERSION }}
@@ -145,7 +145,7 @@ jobs:
           branch: ${{ github.ref }}
     
       - name: Upload to new Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' && env.RELEASE == '1' }}
         with:
           tag_name: libPhone2-${{ env.VERSION }}
