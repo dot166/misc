@@ -27,6 +27,10 @@ jobs:
         run: cd downloader && cargo run ./test-songs.txt
       - name: Test LibMomone
         run: cd UTAU/libmomone && cargo test
+      - name: Build LockDate
+        run: cd lockdate && cargo build
+      - name: Build rsTunes
+        run: cd rsTunes-AOSP && cargo build
       - name: Setup JDK 17
         uses: actions/setup-java@v5
         with:
