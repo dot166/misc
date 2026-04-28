@@ -112,3 +112,4 @@ fi
 eval $(thefuck --alias)
 
 rm -rf $HOME/.cache/hyfetch # force enable easter egg in hyfetch
+export TERMINAL=kitty
