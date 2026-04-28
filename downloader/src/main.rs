@@ -396,7 +396,7 @@ async fn process_song(
 async fn main() {
     let default_output_dir = dirs::home_dir()
         .unwrap()
-        .join("Downloads/vocaloid")
+        .join("Music")
         .to_string_lossy()
         .to_string();
 
