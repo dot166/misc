@@ -113,11 +113,11 @@ jobs:
           git commit -m "Update Helpline List" || true
 
       - name: Build libPhone2
-        run: cd sensitive-pn/libPhone/libPhone2 && chmod +x gradlew && ./gradlew assembleRelease
+        run: cd sensitive-pn/libPhone2 && chmod +x gradlew && ./gradlew assembleRelease
       - name: Check if Release build
         shell: sh
         run: |
-          VERSION=$(cat sensitive-pn/libPhone/libPhone2/ver)
+          VERSION=$(cat sensitive-pn/libPhone2/ver)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           RELEASE=0 && git show-ref --tags --verify --quiet "refs/tags/libPhone2-$VERSION" || RELEASE=1
           echo "RELEASE=$RELEASE" >> $GITHUB_ENV
@@ -125,14 +125,14 @@ jobs:
       - name: publish libPhone2
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' && env.RELEASE == '1' }}
         run: |
-          cd sensitive-pn/libPhone/libPhone2
+          cd sensitive-pn/libPhone2
           echo ${{ env.VERSION }}
           ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
 
       - name: add AOSP prebuilt
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' }}
         run: |
-          cd sensitive-pn/libPhone/libPhone2
+          cd sensitive-pn/libPhone2
           cp lib/build/outputs/aar/lib-release.aar lib/libPhone2.aar
           git add .
           git commit -m "Update Helpline List" || true
