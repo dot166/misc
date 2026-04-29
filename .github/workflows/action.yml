@@ -5,14 +5,15 @@ on: [push, pull_request, workflow_dispatch]
 env:
   CARGO_TERM_COLOR: always
   GH_AUTH_TOKEN: ${{ secrets.GH_TOKEN }} # setting GH_TOKEN for the entire workflow
-  ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_USERNAME }}
-  ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_PASSWD }}
-  ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY }}
-  ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_PASSWD }}
 
 jobs:
   build-it-all:
     runs-on: ubuntu-latest
+    env:
+      ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_USERNAME }}
+      ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_PASSWD }}
+      ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY }}
+      ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_PASSWD }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
