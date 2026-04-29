@@ -1,0 +1,13 @@
+android_library_import {
+    name: "libPhone2",
+    aars: ["libPhone2.aar"],
+    sdk_version: "current",
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
+    static_libs: [
+        "libphonenumber",
+        "androidx.annotation_annotation",
+    ],
+}

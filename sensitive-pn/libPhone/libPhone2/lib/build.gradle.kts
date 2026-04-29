@@ -5,7 +5,9 @@ plugins {
 }
 
 group = "io.github.dot166"
-version = 1
+version = providers.exec {
+    commandLine("cat", "ver")
+}.standardOutput.asText.get().trim()
 
 android {
     namespace = "io.github.dot166.libphone2"
@@ -40,7 +42,7 @@ android {
 
 dependencies {
     api(libs.libphonenumber)
-    implementation(libs.annotation)
+    api(libs.annotation)
 }
 
 aconfig {
@@ -48,3 +50,31 @@ aconfig {
     isAOSP = false
 }
 
+mavenPublishing {
+    coordinates(group.toString(), rootProject.name, version.toString())
+
+    pom {
+        name = "libPhone2"
+        description = "reimplementation of LineageOS libPhone"
+        inceptionYear = "2026"
+        url = "https://github.com/dot166/misc"
+        licenses {
+            license {
+                name.set("MIT License")
+                url.set("https://choosealicense.com/licenses/mit/")
+            }
+        }
+        developers {
+            developer {
+                id = "dot166"
+                name = "._______166"
+                url = "https://dot166.github.io"
+            }
+        }
+        scm {
+            url = "https://github.com/dot166/misc"
+            connection = "scm:git:git://github.com/dot166/misc.git"
+            developerConnection = "scm:git:ssh://git@github.com/dot166/misc.git"
+        }
+    }
+}

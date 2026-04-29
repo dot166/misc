@@ -117,7 +117,7 @@ jobs:
       - name: Check if Release build
         shell: sh
         run: |
-          VERSION=$(jq '.elements[0].versionCode' sensitive-pn/libPhone/libPhone2/lib/build/outputs/apk/release/output-metadata.json)
+          VERSION=$(cat sensitive-pn/libPhone/libPhone2/ver)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           RELEASE=0 && git show-ref --tags --verify --quiet "refs/tags/libPhone2-$VERSION" || RELEASE=1
           echo "RELEASE=$RELEASE" >> $GITHUB_ENV
@@ -128,6 +128,14 @@ jobs:
           cd sensitive-pn/libPhone/libPhone2
           echo ${{ env.VERSION }}
           ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
+
+      - name: add AOSP prebuilt
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' }}
+        run: |
+          cd sensitive-pn/libPhone/libPhone2
+          cp lib/build/outputs/aar/lib-release.aar lib/libPhone2.aar
+          git add .
+          git commit -m "Update Helpline List" || true
 
       - name: Push changes to repo
         uses: ad-m/github-push-action@master
