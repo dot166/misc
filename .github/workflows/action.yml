@@ -136,7 +136,7 @@ jobs:
           cd sensitive-pn/libPhone2
           cp lib/build/outputs/aar/lib-release.aar lib/libPhone2.aar
           git add .
-          git commit -m "Update Helpline List" || true
+          git commit -m "Update libPhone2" || true
 
       - name: Push changes to repo
         uses: ad-m/github-push-action@master
