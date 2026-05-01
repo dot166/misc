@@ -52,6 +52,7 @@ struct SongMetadata {
     artist: String,
     name: String,
     id: i32,
+    album: String,
 }
 
 async fn get_metadata(id: &str) -> Result<SongMetadata, String> {
@@ -61,7 +62,7 @@ async fn get_metadata(id: &str) -> Result<SongMetadata, String> {
     );
 
     let client = reqwest::Client::builder()
-        .user_agent("vocaloid-downloader/1.2.1 (https://github.com/dot166/misc)")
+        .user_agent("vocaloid-downloader/1.3.0 (https://github.com/dot166/misc)")
         .build()
         .unwrap();
 
@@ -74,10 +75,11 @@ async fn get_metadata(id: &str) -> Result<SongMetadata, String> {
 
     Ok(SongMetadata {
         url,
-        main_picture: song.main_picture.url_original,
+        main_picture: get_album_art(song.id, song.main_picture.url_original),
         artist: song.artist_string,
-        name: song.name,
+        name: song.name.clone(),
         id: song.id,
+        album: get_album_name(song.id, song.name),
     })
 }
 
@@ -310,7 +312,7 @@ fn download_audio(
             "-id3v2_version", "3",
             "-metadata", &format!("title={}", meta.name),
             "-metadata", &format!("artist={}", meta.artist),
-            "-metadata", &format!("album={}", meta.name),
+            "-metadata", &format!("album={}", meta.album),
             "-metadata", "genre=VOCALOID",
             "-metadata:s:v", "title=Album cover",
             "-metadata:s:v", "comment=Cover (front)",
@@ -389,6 +391,32 @@ async fn process_song(
         Err(_) => {
             Err("Worker panicked".into())
         }
+    }
+}
+
+fn is_in_unhappy_refrain(id: i32) -> bool {
+    match id {
+        20 => true, // ワールズエンド・ダンスホール
+        1500..=1512 => true, // アンハッピーリフレイン, ローリンガール, 積み木の人形, 僕のサイノウ, 日常と地球の額縁, テノヒラ, とおせんぼ, ラインアート, 裏表ラバーズ, グレーゾーンにて。, ずれていく, リバシブルドール, プリズムキューブ
+        _ => false,
+    }
+}
+
+fn get_album_name(id: i32, name: String) -> String {
+    if is_in_unhappy_refrain(id) {
+        return "アンハッピーリフレイン".to_string(); // use the same name that vocadb supplies for it, we do not request the name from vocadb as it (most likely) will never change and i do not want to hammer vocadb`s api to get an album name that probably will never be different, it has not changed since its release in 2011, so safe to assume that it will be 'アンハッピーリフレイン'
+    } else {
+        return name;
+    }
+}
+
+fn get_album_art(id: i32, url: String) -> String {
+    if is_in_unhappy_refrain(id) {
+        return "https://static.vocadb.net/img/Album/mainOrig/79.jpg?v=27".to_string(); 
+    } else if id == 1032 {
+        return "https://nicovideo.cdn.nimg.jp/thumbnails/6666016/6666016".to_string(); // vocadb has a broken thumbnail for ロミオとシンデレラ, so provide our own
+    } else {
+        return url;
     }
 }
 
