@@ -85,13 +85,15 @@ fn main() {
 
         match action.as_str() {
             "init" => {
-                let status = Command::new("git")
-                    .arg("clone")
-                    .arg(format!("https://github.com/dot166/{}", repo))
-                    .status();
+                if !Path::new(repo).exists() {
+                    let status = Command::new("git")
+                        .arg("clone")
+                        .arg(format!("https://github.com/dot166/{}", repo))
+                        .status();
 
-                if status.is_err() {
-                    panic!("Error cloning {}: {}", repo, status.unwrap_err());
+                    if status.is_err() {
+                        panic!("Error cloning {}: {}", repo, status.unwrap_err());
+                    }
                 }
             }
             _ => {}
@@ -276,50 +278,52 @@ fn main() {
         }
 
         if action == "init" {
-            let status = Command::new("git")
-                .arg("remote")
-                .arg("add")
-                .arg("upstream")
-                .arg(format!(
-                    "https://android.googlesource.com/{}",
-                    repo.replace('_', "/")
-                ))
-                .status();
+            if !Path::new(repo).exists() {
+                let status = Command::new("git")
+                    .arg("remote")
+                    .arg("add")
+                    .arg("upstream")
+                    .arg(format!(
+                        "https://android.googlesource.com/{}",
+                        repo.replace('_', "/")
+                    ))
+                    .status();
 
-            if status.is_err() {
-                panic!(
-                    "Error adding upstream for {}: {}",
-                    repo,
-                    status.unwrap_err()
-                );
-            }
+                if status.is_err() {
+                    panic!(
+                        "Error adding upstream for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
+                }
 
-            let status = Command::new("git")
-                .arg("fetch")
-                .arg("upstream")
-                .arg("--tags")
-                .status();
+                let status = Command::new("git")
+                    .arg("fetch")
+                    .arg("upstream")
+                    .arg("--tags")
+                    .status();
 
-            if status.is_err() {
-                panic!(
-                    "Error fetching upstream tags for {}: {}",
-                    repo,
-                    status.unwrap_err()
-                );
-            }
+                if status.is_err() {
+                    panic!(
+                        "Error fetching upstream tags for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
+                }
 
-            let status = Command::new("gh")
-                .arg("repo")
-                .arg("set-default")
-                .arg("origin")
-                .status();
+                let status = Command::new("gh")
+                    .arg("repo")
+                    .arg("set-default")
+                    .arg("origin")
+                    .status();
 
-            if status.is_err() {
-                panic!(
-                    "Error setting default github repo for {}: {}",
-                    repo,
-                    status.unwrap_err()
-                );
+                if status.is_err() {
+                    panic!(
+                        "Error setting default github repo for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
+                }
             }
         }
 
@@ -336,13 +340,15 @@ fn main() {
         println!("\n>>> Handling {}", repo);
 
         if action == "init" {
-            let status = Command::new("git")
-                .arg("clone")
-                .arg(format!("https://github.com/dot166/{}", repo))
-                .status();
+            if !Path::new(repo).exists() {
+                let status = Command::new("git")
+                    .arg("clone")
+                    .arg(format!("https://github.com/dot166/{}", repo))
+                    .status();
 
-            if status.is_err() {
-                panic!("Error cloning {}: {}", repo, status.unwrap_err());
+                if status.is_err() {
+                    panic!("Error cloning {}: {}", repo, status.unwrap_err());
+                }
             }
         }
 
@@ -556,49 +562,51 @@ fn main() {
         }
 
         if action == "init" {
-            let remote_url = &format!("https://github.com/grapheneos/{}", repo);
+            if !Path::new(repo).exists() {
+                let remote_url = &format!("https://github.com/grapheneos/{}", repo);
 
-            let status = Command::new("git")
-                .arg("remote")
-                .arg("add")
-                .arg("upstream")
-                .arg(remote_url)
-                .status();
+                let status = Command::new("git")
+                    .arg("remote")
+                    .arg("add")
+                    .arg("upstream")
+                    .arg(remote_url)
+                    .status();
 
-            if status.is_err() {
-                panic!(
-                    "Error adding upstream for {}: {}",
-                    repo,
-                    status.unwrap_err()
-                );
-            }
+                if status.is_err() {
+                    panic!(
+                        "Error adding upstream for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
+                }
 
-            let status = Command::new("git")
-                .arg("fetch")
-                .arg("upstream")
-                .arg("--tags")
-                .status();
+                let status = Command::new("git")
+                    .arg("fetch")
+                    .arg("upstream")
+                    .arg("--tags")
+                    .status();
 
-            if status.is_err() {
-                panic!(
-                    "Error fetching upstream tags for {}: {}",
-                    repo,
-                    status.unwrap_err()
-                );
-            }
+                if status.is_err() {
+                    panic!(
+                        "Error fetching upstream tags for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
+                }
 
-            let status = Command::new("gh")
-                .arg("repo")
-                .arg("set-default")
-                .arg("origin")
-                .status();
+                let status = Command::new("gh")
+                    .arg("repo")
+                    .arg("set-default")
+                    .arg("origin")
+                    .status();
 
-            if status.is_err() {
-                panic!(
-                    "Error setting default github repo for {}: {}",
-                    repo,
-                    status.unwrap_err()
-                );
+                if status.is_err() {
+                    panic!(
+                        "Error setting default github repo for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
+                }
             }
         }
 
@@ -615,13 +623,15 @@ fn main() {
         println!("\n>>> Handling {}", repo);
 
         if action == "init" {
-            let status = Command::new("git")
-                .arg("clone")
-                .arg(format!("https://github.com/dot166/{}", repo))
-                .status();
+            if !Path::new(repo).exists() {
+                let status = Command::new("git")
+                    .arg("clone")
+                    .arg(format!("https://github.com/dot166/{}", repo))
+                    .status();
 
-            if status.is_err() {
-                panic!("Error cloning {}: {}", repo, status.unwrap_err());
+                if status.is_err() {
+                    panic!("Error cloning {}: {}", repo, status.unwrap_err());
+                }
             }
         }
 
@@ -798,50 +808,52 @@ fn main() {
         }
 
         if action == "init" {
-            let status = Command::new("git")
-                .arg("remote")
-                .arg("add")
-                .arg("upstream")
-                .arg(format!(
-                    "https://github.com/LineageOS/{}",
-                    repo.replace("platform", "android")
-                ))
-                .status();
+            if !Path::new(repo).exists() {
+                let status = Command::new("git")
+                    .arg("remote")
+                    .arg("add")
+                    .arg("upstream")
+                    .arg(format!(
+                        "https://github.com/LineageOS/{}",
+                        repo.replace("platform", "android")
+                    ))
+                    .status();
 
-            if status.is_err() {
-                panic!(
-                    "Error adding upstream for {}: {}",
-                    repo,
-                    status.unwrap_err()
-                );
-            }
+                if status.is_err() {
+                    panic!(
+                        "Error adding upstream for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
+                }
 
-            let status = Command::new("git")
-                .arg("fetch")
-                .arg("upstream")
-                .arg("--tags")
-                .status();
+                let status = Command::new("git")
+                    .arg("fetch")
+                    .arg("upstream")
+                    .arg("--tags")
+                    .status();
 
-            if status.is_err() {
-                panic!(
-                    "Error fetching upstream tags for {}: {}",
-                    repo,
-                    status.unwrap_err()
-                );
-            }
+                if status.is_err() {
+                    panic!(
+                        "Error fetching upstream tags for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
+                }
 
-            let status = Command::new("gh")
-                .arg("repo")
-                .arg("set-default")
-                .arg("origin")
-                .status();
+                let status = Command::new("gh")
+                    .arg("repo")
+                    .arg("set-default")
+                    .arg("origin")
+                    .status();
 
-            if status.is_err() {
-                panic!(
-                    "Error setting default github repo for {}: {}",
-                    repo,
-                    status.unwrap_err()
-                );
+                if status.is_err() {
+                    panic!(
+                        "Error setting default github repo for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
+                }
             }
         }
 
@@ -858,13 +870,15 @@ fn main() {
         println!("\n>>> Handling {}", repo);
 
         if action == "init" {
-            let status = Command::new("git")
-                .arg("clone")
-                .arg(format!("https://github.com/dot166/{}", repo))
-                .status();
+            if !Path::new(repo).exists() {
+                let status = Command::new("git")
+                    .arg("clone")
+                    .arg(format!("https://github.com/dot166/{}", repo))
+                    .status();
 
-            if status.is_err() {
-                panic!("Error cloning {}: {}", repo, status.unwrap_err());
+                if status.is_err() {
+                    panic!("Error cloning {}: {}", repo, status.unwrap_err());
+                }
             }
         }
 
@@ -929,49 +943,51 @@ fn main() {
         }
 
         if action == "init" {
-            let remote_url = &format!("https://github.com/grapheneos/{}", repo);
+            if !Path::new(repo).exists() {
+                let remote_url = &format!("https://github.com/grapheneos/{}", repo);
 
-            let status = Command::new("git")
-                .arg("remote")
-                .arg("add")
-                .arg("upstream")
-                .arg(remote_url)
-                .status();
+                let status = Command::new("git")
+                    .arg("remote")
+                    .arg("add")
+                    .arg("upstream")
+                    .arg(remote_url)
+                    .status();
 
-            if status.is_err() {
-                panic!(
-                    "Error adding upstream for {}: {}",
-                    repo,
-                    status.unwrap_err()
-                );
-            }
+                if status.is_err() {
+                    panic!(
+                        "Error adding upstream for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
+                }
 
-            let status = Command::new("git")
-                .arg("fetch")
-                .arg("upstream")
-                .arg("--tags")
-                .status();
+                let status = Command::new("git")
+                    .arg("fetch")
+                    .arg("upstream")
+                    .arg("--tags")
+                    .status();
 
-            if status.is_err() {
-                panic!(
-                    "Error fetching upstream tags for {}: {}",
-                    repo,
-                    status.unwrap_err()
-                );
-            }
+                if status.is_err() {
+                    panic!(
+                        "Error fetching upstream tags for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
+                }
 
-            let status = Command::new("gh")
-                .arg("repo")
-                .arg("set-default")
-                .arg("origin")
-                .status();
+                let status = Command::new("gh")
+                    .arg("repo")
+                    .arg("set-default")
+                    .arg("origin")
+                    .status();
 
-            if status.is_err() {
-                panic!(
-                    "Error setting default github repo for {}: {}",
-                    repo,
-                    status.unwrap_err()
-                );
+                if status.is_err() {
+                    panic!(
+                        "Error setting default github repo for {}: {}",
+                        repo,
+                        status.unwrap_err()
+                    );
+                }
             }
         }
 
@@ -988,13 +1004,15 @@ fn main() {
         println!("\n>>> Handling {}", repo);
 
         if action == "init" {
-            let status = Command::new("git")
-                .arg("clone")
-                .arg(format!("https://github.com/dot166/{}", repo))
-                .status();
+            if !Path::new(repo).exists() {
+                let status = Command::new("git")
+                    .arg("clone")
+                    .arg(format!("https://github.com/dot166/{}", repo))
+                    .status();
 
-            if status.is_err() {
-                panic!("Error cloning {}: {}", repo, status.unwrap_err());
+                if status.is_err() {
+                    panic!("Error cloning {}: {}", repo, status.unwrap_err());
+                }
             }
         }
 
