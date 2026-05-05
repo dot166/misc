@@ -1,6 +1,6 @@
 use lib_aosp::scripts;
 use std::process::Command;
-use std::{env, fs};
+use std::{env, fs, path::Path};
 
 fn main() {
     let (aosp_tag, aosp_tag_old, branch) = scripts::read_common_sh();
