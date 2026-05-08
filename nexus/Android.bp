@@ -1,4 +1,4 @@
-android_application {
+android_app {
     name: "Nexus",
     certificate: "platform",
     privileged: true,
