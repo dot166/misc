@@ -3,6 +3,7 @@ android_application {
     certificate: "platform",
     privileged: true,
     platform_apis: true,
+    product_specific: true,
     static_libs: [
         "j-Lib",
         "androidx.lifecycle_lifecycle-service",
