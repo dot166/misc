@@ -1,0 +1,25 @@
+android_application {
+    name: "Nexus",
+    certificate: "platform",
+    privileged: true,
+    platform_apis: true,
+    static_libs: [
+        "j-Lib",
+        "androidx.lifecycle_lifecycle-service",
+    ],
+
+    manifest: "AndroidManifest.xml",
+
+    srcs: [
+        "java/**/*.kt",
+        "java/**/*.java",
+        "aidl/**/*.aidl",
+    ],
+
+    resource_dirs: [
+        "res",
+    ],
+
+    kotlincflags: ["-Xjvm-default=all"],
+    min_sdk_version: "31",
+}
