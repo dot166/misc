@@ -11,12 +11,3 @@ android_library_import {
         "androidx.annotation_annotation",
     ],
 }
-
-// STUB!, links to libPhone2
-android_library {
-    name: "org.lineageos.lib.phone",
-    sdk_version: "current",
-    static_libs: [
-        "libPhone2",
-    ],
-}
