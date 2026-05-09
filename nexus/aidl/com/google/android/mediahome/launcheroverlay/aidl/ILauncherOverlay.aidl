@@ -1,5 +1,6 @@
 package com.google.android.mediahome.launcheroverlay.aidl;
 
+import android.os.Bundle;
 import com.google.android.mediahome.launcheroverlay.aidl.ILauncherOverlayCallback;
 
 interface ILauncherOverlay {

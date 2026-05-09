@@ -1,5 +1,7 @@
 package com.google.android.mediahome.launcheroverlay.aidl;
 
+import android.os.Bundle;
+
 interface ILauncherOverlayCallback {
 
     oneway void overlayScrollChanged(float progress);
