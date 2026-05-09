@@ -34,4 +34,17 @@ class SensitivePhoneNumbers private constructor() {
             throw UnsupportedOperationException("Compat with libPhone1 is disabled")
         }
     }
+
+    companion object {
+        @Deprecated("This is only for backwards compatibility, please move to the libPhone2 classes")
+        private var sInstance: SensitivePhoneNumbers? = null
+        @Deprecated("This is only for backwards compatibility, please move to the libPhone2 classes")
+        val instance: SensitivePhoneNumbers
+            get() {
+                if (sInstance == null) {
+                    sInstance = SensitivePhoneNumbers()
+                }
+                return sInstance!!
+            }
+    }
 }
