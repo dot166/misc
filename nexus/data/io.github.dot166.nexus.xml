@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<permissions>
+    <privapp-permissions package="io.github.dot166.nexus">
+        <permission name="android.permission.ACTIVITY_EMBEDDING"/>
+    </privapp-permissions>
+</permissions>

@@ -27,4 +27,15 @@ android_app {
 
     kotlincflags: ["-Xjvm-default=all"],
     min_sdk_version: "31",
+    required: [
+        "io.github.dot166.nexus.xml",
+    ],
+}
+
+prebuilt_etc {
+    name: "io.github.dot166.nexus.xml",
+    src: "data/io.github.dot166.nexus.xml",
+    sub_dir: "permissions",
+    filename_from_src: true,
+    system_ext_specific: true,
 }
