@@ -3,10 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="io.github.dot166.nexus">
 
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
-
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
     <!-- System permission to host activities -->
     <uses-permission android:name="android.permission.ACTIVITY_EMBEDDING"/>
@@ -36,8 +32,9 @@
 
         <service
             android:name=".MinusOneService"
+            android:enabled="true"
             android:exported="true"
-            android:foregroundServiceType="specialUse"
+            android:process="io.github.dot166.nexus"
             android:label="@string/app_name"
             tools:ignore="ExportedService">
             <intent-filter>

@@ -6,7 +6,6 @@ android_app {
     system_ext_specific: true,
     static_libs: [
         "j-Lib",
-        "androidx.lifecycle_lifecycle-service",
     ],
 
     manifest: "AndroidManifest.xml",
