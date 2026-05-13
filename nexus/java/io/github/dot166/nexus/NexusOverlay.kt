@@ -1,5 +1,6 @@
 package io.github.dot166.nexus
 
+import android.Manifest
 import android.app.ActivityManager
 import android.app.ActivityOptions
 import android.content.ComponentName
@@ -20,6 +21,7 @@ import android.view.TextureView
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
+import androidx.annotation.RequiresPermission
 import androidx.core.view.doOnPreDraw
 import androidx.preference.PreferenceManager
 import com.google.android.gsa.overlay.controllers.OverlayController
@@ -87,15 +89,21 @@ class NexusOverlay(
                 lockOn = true
                 lockOff = false
                 val surface = TextureView(this)
-                surface.setOnTouchListener { v, event ->
-                    val currentVd = vd ?: return@setOnTouchListener false
-                    val copy = MotionEvent.obtain(event)
-                    copy.setDisplayId(currentVd.display.displayId)
-                    val im = context.getSystemService(Context.INPUT_SERVICE) as InputManager
-                    im.injectInputEvent(copy, InputManager.INJECT_INPUT_EVENT_MODE_ASYNC)
-                    copy.recycle()
-                    true
-                }
+                surface.setOnTouchListener(object : View.OnTouchListener {
+                    @RequiresPermission(Manifest.permission.INJECT_EVENTS)
+                    override fun onTouch(
+                        v: View,
+                        event: MotionEvent?
+                    ): Boolean {
+                        val currentVd = vd ?: return false
+                        val copy = MotionEvent.obtain(event)
+                        copy.displayId = currentVd.display.displayId
+                        val im = getSystemService(INPUT_SERVICE) as InputManager
+                        im.injectInputEvent(copy, InputManager.INJECT_INPUT_EVENT_MODE_ASYNC)
+                        copy.recycle()
+                        return true
+                    }
+                })
                 surface.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
                     override fun onSurfaceTextureAvailable(
                         surface: SurfaceTexture,
