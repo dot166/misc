@@ -200,6 +200,7 @@ fn install_gui() -> Result<()> {
         "hyprpolkitagent",
         "hyprshot",
         "kitty",
+        "qt6ct",
         "nwg-look",
         "nwg-displays",
         "tree-sitter-cli",
