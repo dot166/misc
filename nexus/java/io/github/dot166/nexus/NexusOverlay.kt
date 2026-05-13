@@ -9,10 +9,12 @@ import android.graphics.Color
 import android.graphics.SurfaceTexture
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
+import android.hardware.input.InputManager
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Display
+import android.view.MotionEvent
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
@@ -85,6 +87,15 @@ class NexusOverlay(
                 lockOn = true
                 lockOff = false
                 val surface = TextureView(this)
+                surface.setOnTouchListener { v, event ->
+                    val currentVd = vd ?: return@setOnTouchListener false
+                    val copy = MotionEvent.obtain(event)
+                    copy.setDisplayId(currentVd.display.displayId)
+                    val im = context.getSystemService(Context.INPUT_SERVICE) as InputManager
+                    im.injectInputEvent(copy, InputManager.INJECT_INPUT_EVENT_MODE_ASYNC)
+                    copy.recycle()
+                    true
+                }
                 surface.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
                     override fun onSurfaceTextureAvailable(
                         surface: SurfaceTexture,
@@ -101,7 +112,7 @@ class NexusOverlay(
                                 height,
                                 metrics.densityDpi,
                                 Surface(surface),
-                                DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC or DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY
+                                DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC or DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY or DisplayManager.VIRTUAL_DISPLAY_FLAG_DESTROY_CONTENT_ON_REMOVAL
                             )
                         val options = ActivityOptions.makeBasic()
                         options.setLaunchDisplayId(vd!!.display.displayId)
@@ -118,7 +129,7 @@ class NexusOverlay(
                                             ?: "io.github.dot166.nexus/io.github.dot166.nexus.DefaultStub" // return stub activity when not set or null, prevents user confusion
                                     )
                             }
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY)
                         startActivity(intent, options.toBundle())
                     }
 
