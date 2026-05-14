@@ -26,15 +26,17 @@ android {
     }
     namespace = "io.github.dot166.nightstand"
     compileSdk {
-        version = release(36)
+        version = release(36) {
+            minorApiLevel = 1
+        }
     }
 
     defaultConfig {
         applicationId = "io.github.dot166.nightstand"
-        minSdk = 30
+        minSdk = 31
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = versionCode.toString()
     }
 
     buildTypes {
@@ -47,6 +49,9 @@ android {
             if (useKeystoreProperties) {
                 signingConfig = signingConfigs.getByName("release")
             }
+        }
+        debug {
+            applicationIdSuffix = ".dev"
         }
     }
     compileOptions {

@@ -1,8 +1,8 @@
 package io.github.dot166.nightstand
 
-import android.app.Application
+import io.github.dot166.jlib.app.RestorableSettingsApplication
 
-class NightStandApplication: Application() {
+class NightStandApplication: RestorableSettingsApplication() {
     override fun onCreate() {
         super.onCreate()
         Utils.init(this)

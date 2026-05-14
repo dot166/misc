@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView android:id="@+id/event"
+    style="@style/body"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    tools:text="Meeting at 9:00 on 02.01"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" />

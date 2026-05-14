@@ -3,6 +3,7 @@ package io.github.dot166.nightstand
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
+import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.graphics.PorterDuff
@@ -18,6 +19,9 @@ import android.view.animation.DecelerateInterpolator
 import android.view.animation.Interpolator
 import android.widget.TextView
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import io.github.dot166.nightstand.Utils.addMinuteCallback
 import io.github.dot166.nightstand.Utils.dimClockView
 import io.github.dot166.nightstand.Utils.enforceMainLooper
@@ -40,6 +44,7 @@ class MoveScreensaverRunnable(
     private val mSaverView: View
 ) : Runnable {
     private val mMusicView: View = mSaverView.findViewById(R.id.music_holder)
+    private val mRecycler = mSaverView.findViewById<RecyclerView>(R.id.calendar_events)
 
     /** Accelerate the hide animation.  */
     private val mAcceleration: Interpolator = AccelerateInterpolator()
@@ -56,10 +61,12 @@ class MoveScreensaverRunnable(
 
     private var currentController: MediaController? = null
     var mIsPlaying = false
+    lateinit var mAdapter: EventAdapter
 
     /**
      * Start or restart the random movement of the saver view within the content view.
      */
+    @SuppressLint("NotifyDataSetChanged")
     fun start() {
         // Stop any existing animations or callbacks.
         stop()
@@ -79,10 +86,12 @@ class MoveScreensaverRunnable(
 
         mCalendarModel.startPolling()
 
-        val event = mCalendarModel.event
-        if (mCalendarModel.hasUpcomingEvent() && event != null) {
-            (mSaverView.findViewById<View?>(R.id.event) as TextView).text = event.toString()
-        }
+        mRecycler.setLayoutManager(LinearLayoutManager(mRecycler.context))
+        mRecycler.setItemAnimator(DefaultItemAnimator())
+        mRecycler.setHasFixedSize(false)
+        mAdapter = EventAdapter(mCalendarModel.events)
+        mRecycler.setAdapter(mAdapter)
+        mAdapter.notifyDataSetChanged()
 
         val mediaSessionManager =
             mContentView.context.getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
@@ -196,6 +205,7 @@ class MoveScreensaverRunnable(
 
         } catch (e: Exception) {
             // Fallback: clear icon if anything goes wrong
+            e.printStackTrace() // we cant use ErrorUtils here as the dialog would close the screensaver
             titleView.setCompoundDrawablesRelative(null, null, null, null)
         }
     }
@@ -214,15 +224,12 @@ class MoveScreensaverRunnable(
         mCalendarModel.stopPolling()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun run() {
         enforceMainLooper()
-        val event = mCalendarModel.event
-        if (mCalendarModel.hasUpcomingEvent() && event != null) {
-            (mSaverView.findViewById<View?>(R.id.event) as TextView).text = event.toString()
-        } else {
-            (mSaverView.findViewById<View?>(R.id.event) as TextView).text =
-                mContentView.context.getString(R.string.no_events_found_in_android_system)
-        }
+        mAdapter = EventAdapter(mCalendarModel.events)
+        mRecycler.setAdapter(mAdapter)
+        mAdapter.notifyDataSetChanged()
         if (mIsPlaying) {
             mMusicView.visibility = View.VISIBLE
         } else {

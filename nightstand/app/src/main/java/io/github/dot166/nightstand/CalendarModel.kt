@@ -6,20 +6,23 @@ import android.database.Cursor
 import android.os.Handler
 import android.os.Looper
 import android.provider.CalendarContract
+import android.text.format.DateFormat
 import android.text.format.DateUtils
+import androidx.core.os.ConfigurationCompat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import kotlin.math.min
 
 class CalendarModel(val ctx: Context) {
 
-    var event: Event? = null
+    var events: List<Event> = listOf()
 
     private val mHandler: Handler = Handler(Looper.getMainLooper())
 
     private val mCalendarPoll: Runnable = object : Runnable {
         override fun run() {
-            event = fetch()
+            events = fetch()
             mHandler.postDelayed(this, 15 * 60 * 1000L)
         }
     }
@@ -34,7 +37,8 @@ class CalendarModel(val ctx: Context) {
                 timeInMillis = end
             }
 
-            val fmt = SimpleDateFormat("HH:mm:ss dd-MM-Y", Locale.getDefault());
+            val currentLocale: Locale = ConfigurationCompat.getLocales(ctx.resources.configuration)[0]!!
+            val fmt = SimpleDateFormat(DateFormat.getBestDateTimePattern(currentLocale, "HH:mm:ss dd-MM-yyyy"), currentLocale)
             val durationStr: String = if (allDay) {
                 ctx.getString(R.string.all_day)
             } else {
@@ -49,7 +53,8 @@ class CalendarModel(val ctx: Context) {
         }
     }
 
-    fun fetch(): Event? {
+    fun fetch(): List<Event> {
+        val list = mutableListOf<Event>()
         val now = System.currentTimeMillis()
         val oneWeekLater = now + DateUtils.WEEK_IN_MILLIS
         val uri = CalendarContract.Instances.CONTENT_URI.buildUpon()
@@ -76,19 +81,18 @@ class CalendarModel(val ctx: Context) {
             null,
             sortOrder
         )
-        if (c != null && c.moveToFirst()) {
-            val title = c.getString(0)
-            val start = c.getLong(1)
-            val end = c.getLong(2)
-            val allDay = c.getInt(3) != 0
-
-            return Event(title, start, end, allDay, ctx)
+        if (c != null) {
+            for (i in 0 until min(c.count, 5)) {
+                c.moveToPosition(i)
+                val title = c.getString(0)
+                val start = c.getLong(1)
+                val end = c.getLong(2)
+                val allDay = c.getInt(3) != 0
+                list.add(Event(title, start, end, allDay, ctx))
+            }
         }
         c?.close()
-        return null
-    }
-    fun hasUpcomingEvent(): Boolean {
-        return event != null
+        return list
     }
 
     fun startPolling() {
