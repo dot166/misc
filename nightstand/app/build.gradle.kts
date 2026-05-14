@@ -35,7 +35,7 @@ android {
         applicationId = "io.github.dot166.nightstand"
         minSdk = 31
         targetSdk = 36
-        versionCode = 2
+        versionCode = 3
         versionName = versionCode.toString()
     }
 

@@ -65,7 +65,7 @@
         </LinearLayout>
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/calendar_events"
-            tools:itemCount="3"
+            tools:itemCount="5"
             tools:listitem="@layout/row"
             app:layout_constraintTop_toBottomOf="@id/date_container"
             android:layout_width="match_parent"
