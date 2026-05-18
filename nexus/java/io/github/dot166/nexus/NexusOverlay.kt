@@ -35,6 +35,10 @@ class NexusOverlay(
     android.R.style.Theme_Translucent_NoTitleBar
 ) {
 
+    companion object {
+        private const val KEY_BACKGROUND_BLUR_PROGRESS = "background_blur_progress"
+    }
+
     private var backgroundBlurProgress = 0f
     private val blurProvider = BlurProvider(resources)
     private var isResumed = false
@@ -54,6 +58,8 @@ class NexusOverlay(
             it.navigationBarColor = Color.TRANSPARENT
         }
         window?.decorView?.removeStatusNavBackgroundOnPreDraw()
+        backgroundBlurProgress = bundle
+            ?.getFloat(KEY_BACKGROUND_BLUR_PROGRESS, 0f) ?: 0f
     }
 
     override fun onPause() {
@@ -84,7 +90,7 @@ class NexusOverlay(
         super.onDragProgress(progress)
         updateProgressViews(progress)
         Log.i("AAAAAA", progress.toString())
-        if (progress == 1.0f) {
+        if (progress > 0.0f) {
             if (!lockOn) {
                 lockOn = true
                 lockOff = false
@@ -137,7 +143,7 @@ class NexusOverlay(
                                             ?: "io.github.dot166.nexus/io.github.dot166.nexus.DefaultStub" // return stub activity when not set or null, prevents user confusion
                                     )
                             }
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
                         startActivity(intent, options.toBundle())
                     }
 
@@ -156,20 +162,7 @@ class NexusOverlay(
                     }
 
                     override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
-                        if (vd == null) {
-                            return true
-                        }
-                        val am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
-                        val tasks = am.getAppTasks()
-
-                        for (task in tasks) {
-                            val info = task.taskInfo
-                            if (info.displayId == vd!!.display.displayId) {
-                                task.finishAndRemoveTask()
-                            }
-                        }
-                        vd!!.release()
-                        vd = null
+                        closePanel()
                         return true
                     }
 
@@ -200,6 +193,11 @@ class NexusOverlay(
                 container?.removeAllViews() // nuke it
             }
         }
+    }
+
+    override fun onSaveInstanceState(bundle: Bundle) {
+        super.onSaveInstanceState(bundle)
+        bundle.putFloat(KEY_BACKGROUND_BLUR_PROGRESS, backgroundBlurProgress)
     }
 
     private fun updateProgressViews(progress: Float, force: Boolean = false) {
