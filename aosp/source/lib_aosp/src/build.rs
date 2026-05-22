@@ -6,6 +6,7 @@ use std::process::Command;
 
 pub enum Device {
     // list of devices natively supported by GrapheneOS (and forks of it)
+    Stallion, //stallion (Pixel 10a)
     Rango, //rango (Pixel 10 Pro Fold)
     Mustang, //mustang (Pixel 10 Pro XL)
     Blazer, //blazer (Pixel 10 Pro)
@@ -32,6 +33,7 @@ pub enum Device {
 impl Display for Device {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Stallion => write!(f, "stallion"),
             Self::Rango => f.write_str("rango"),
             Self::Mustang => f.write_str("mustang"),
             Self::Blazer => f.write_str("blazer"),
@@ -59,6 +61,7 @@ impl Display for Device {
 
 pub fn get_device(device: String) -> Device {
     match device.as_str() {
+        "stallion" => Device::Stallion,
         "rango" => Device::Rango,
         "mustang" => Device::Mustang,
         "blazer" => Device::Blazer,
@@ -121,6 +124,7 @@ pub fn build_aosp(device: Device, build_type: BuildType) {
     let build_args;
     match device {
         // build args are sourced from https://grapheneos.org/build
+        Device::Stallion=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
         Device::Rango=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
         Device::Mustang=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
         Device::Blazer=>build_args = "vendorbootimage vendorkernelbootimage target-files-package otatools-package",
