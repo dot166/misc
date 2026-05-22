@@ -179,7 +179,7 @@ pub fn build_aosp(device: Device, build_type: BuildType) {
             panic!("driver build failed with status: {}", output.status);
         }
         println!("Patching FeliCa to work on worldwide models of {}", device);
-        let felica_config_file_path = env::current_dir().unwrap().join(format!("vendor/google/{}/proprietary/product/etc/felica/common.cfg", device)); // currently only pixels are supported and have FeliCa support, TODO! once the GrapheneOS Motorola devices drop, find out if they support FeliCa
+        let felica_config_file_path = env::current_dir().unwrap().join(format!("vendor/google_devices/{}/proprietary/product/etc/felica/common.cfg", device)); // currently only pixels are supported and have FeliCa support, TODO! once the GrapheneOS Motorola devices drop, find out if they support FeliCa
         let patterns_to_remove = vec!["00000014", "00000015"];
         remove_lines_by_patterns(&felica_config_file_path, &patterns_to_remove).unwrap();
         append_if_missing(&felica_config_file_path, "00000018,1").unwrap();
