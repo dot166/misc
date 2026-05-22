@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<host-nfcf-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/felica_test">
+    <!-- 0x0003 is the standard wildcard/transit system code -->
+    <system-code-filter android:name="0003"/>
+    <!-- An 8-byte dummy NFCID2 starting with 02FE for mobile HCE -->
+    <nfcid2-filter android:name="02FE000000000000"/>
+</host-nfcf-service>

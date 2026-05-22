@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">FeliCa Test App</string>
+    <string name="felica_test">emulator to test FeliCa support</string>
+</resources>

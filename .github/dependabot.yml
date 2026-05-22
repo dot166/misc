@@ -48,3 +48,8 @@ updates:
     directory: "/rsTunes-AOSP/" # Location of package manifests
     schedule:
       interval: "daily"
+
+  - package-ecosystem: "gradle"
+    directory: "/FeliCaTestApp/"
+    schedule:
+      interval: "daily"
