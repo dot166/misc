@@ -4,7 +4,7 @@ use lib_aosp::build;
 fn main() {
     let mut args: Vec<String> = env::args().collect();
     if args.len() != 3 {
-        println!("Usage: aosp-build [device] [build type]");
+        println!("Usage: build-android [device] [build type]");
         panic!("Expected two command-line arguments");
     }
     let build_type = build::get_build_type((&args[2]).parse().unwrap());
