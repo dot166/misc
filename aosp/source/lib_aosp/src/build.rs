@@ -1,7 +1,9 @@
 use crate::utils::*;
 use std::env;
 use std::fmt::{Display, Formatter};
-use std::io::Error;
+use std::fs::{self, File};
+use std::io::{self, BufRead, BufReader, Write, Error, ErrorKind};
+use std::path::Path;
 use std::process::Command;
 
 pub enum Device {
@@ -176,6 +178,11 @@ pub fn build_aosp(device: Device, build_type: BuildType) {
         if !output.status.success() {
             panic!("driver build failed with status: {}", output.status);
         }
+        println!("Patching FeliCa to work on worldwide models of {}", device);
+        let felica_config_file_path = env::current_dir().unwrap().join(format!("vendor/google/{}/proprietary/product/etc/felica/common.cfg", device)); // currently only pixels are supported and have FeliCa support, TODO! once the GrapheneOS Motorola devices drop, find out if they support FeliCa
+        let patterns_to_remove = vec!["00000014", "00000015"];
+        remove_lines_by_patterns(&felica_config_file_path, &patterns_to_remove).unwrap();
+        append_if_missing(&felica_config_file_path, "00000018,1").unwrap();
         println!("Finished building drivers for {}", device);
         extra_args = pixel_args.as_str();
     }
@@ -206,9 +213,67 @@ pub fn repo_sync() -> Result<(), Error> {
 
     if !status.success() {
         return Err(Error::new(
-            std::io::ErrorKind::Other,
+            ErrorKind::Other,
             format!("repo sync failed with exit code {}", status.code().unwrap_or(-1)),
         ));
+    }
+
+    Ok(())
+}
+
+fn remove_lines_by_patterns<P: AsRef<Path>>(file_path: P, patterns: &[&str]) -> io::Result<()> {
+    let path = file_path.as_ref();
+    if !path.exists() {
+        return Err(Error::new(ErrorKind::NotFound, "File not found"));
+    }
+
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+    let mut retained_lines = Vec::new();
+
+    for line_result in reader.lines() {
+        let line = line_result?;
+
+        let should_remove = patterns.iter().any(|&pattern| {
+            line.split(|c: char| !c.is_alphanumeric() && c != '_')
+                .any(|word| word == pattern)
+        });
+
+        if !should_remove {
+            retained_lines.push(line);
+        }
+    }
+    let tmp_path = path.with_extension("tmp");
+    {
+        let mut tmp_file = File::create(&tmp_path)?;
+        for line in &retained_lines {
+            writeln!(tmp_file, "{}", line)?;
+        }
+    }
+
+    fs::rename(&tmp_path, path)?;
+
+    Ok(())
+}
+
+fn append_if_missing<P: AsRef<Path>>(file_path: P, line_to_add: &str) -> io::Result<()> {
+    let path = file_path.as_ref();
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+
+    // Check if the exact string already exists in the file
+    let mut found = false;
+    for line in reader.lines() {
+        if line?.contains(line_to_add) {
+            found = true;
+            break;
+        }
+    }
+
+    // If it doesn't exist, append it
+    if !found {
+        let mut file = fs::OpenOptions::new().append(true).open(path)?;
+        writeln!(file, "{}", line_to_add)?;
     }
 
     Ok(())

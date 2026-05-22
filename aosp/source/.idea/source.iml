@@ -8,12 +8,14 @@
       <sourceFolder url="file://$MODULE_DIR$/fork-aosp/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/manage/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/update-checkout/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/lib_aosp/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/build-android/target" />
       <excludeFolder url="file://$MODULE_DIR$/ci-tool/target" />
       <excludeFolder url="file://$MODULE_DIR$/emoji/target" />
       <excludeFolder url="file://$MODULE_DIR$/fork-aosp/target" />
       <excludeFolder url="file://$MODULE_DIR$/manage/target" />
       <excludeFolder url="file://$MODULE_DIR$/update-checkout/target" />
+      <excludeFolder url="file://$MODULE_DIR$/lib_aosp/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
