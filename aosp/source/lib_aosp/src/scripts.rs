@@ -152,7 +152,7 @@ fn graphene_tag_from_manifest(path: &str) -> String {
         xml = fs::read_to_string(path)
             .expect("Failed to read local manifest")
     } else {
-        const URL: &str = "http://dot166.github.io/jOS-Updates/felix-stable";
+        const URL: &str = "https://dot166.github.io/jOS-Updates/felix-stable";
 
         let response = get(URL)
             .expect("Failed to fetch release metadata");

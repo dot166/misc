@@ -269,17 +269,17 @@ impl GenerateManifest {
             manifest.project.push(Project {
                 path: proj.path.clone(),
                 name: proj.name.clone(),
-                groups: groups,
-                clone_depth: clone_depth,
+                groups,
+                clone_depth,
                 remote: Some(
                     proj.remote
                         .clone()
                         .unwrap_or_else(|| config.additional_remotes.first().unwrap().name.clone()),
                 ),
-                revision: revision,
+                revision,
                 aosp_name: None,
-                linkfile: None, // not needed by me yet, so dont support it
-                copyfile: None, // not needed by me yet, so dont support it
+                linkfile: None, // not needed by me yet, so don't support it
+                copyfile: None, // not needed by me yet, so don't support it
             });
         }
 

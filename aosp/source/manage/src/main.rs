@@ -1371,13 +1371,13 @@ fn main() {
     }
 
     if action == "bupdate" {
-        let status = Command::new("script/jOS/manage").arg("update").status();
+        let status = Command::new("misc/aosp/manage").arg("update").status();
 
         if status.is_err() {
             panic!("Error running update: {}", status.unwrap_err());
         }
 
-        let status = Command::new("script/jOS/manage").arg("default").status();
+        let status = Command::new("misc/aosp/manage").arg("default").status();
 
         if status.is_err() {
             panic!("Error running default: {}", status.unwrap_err());
