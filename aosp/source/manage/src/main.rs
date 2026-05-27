@@ -18,6 +18,7 @@ fn main() {
     }
     let action = args[1].clone();
     let mut tag_name = "";
+    let mut builds: Vec<String> = Vec::new();
 
     if action == "update"
         || action == "default"
@@ -32,18 +33,36 @@ fn main() {
             );
         }
         if args.len() != 2 {
-            panic!("expected no arguments for $action");
+            panic!("expected no arguments for {}", action);
         }
-    } else if action == "release" || action == "delete" {
+    } else if action == "delete" {
         if env::var("IS_CI").unwrap_or("false".parse().unwrap()) == "true" {
             panic!(
                 "cannot use {} in ci, this is done to prevent the ci from destroying the source tree",
                 action
             );
         }
-        tag_name = &args[2];
         if args.len() != 3 {
-            panic!("expected tag name as argument for $action");
+            panic!("expected tag name as argument for {}", action);
+        }
+        tag_name = &args[2];
+    } else if action == "release" {
+        if env::var("IS_CI").unwrap_or("false".parse().unwrap()) == "true" {
+            panic!(
+                "cannot use {} in ci, this is done to prevent the ci from destroying the source tree",
+                action
+            );
+        }
+        if args.len() < 4 {
+            panic!("expected at least 2 arguments for {}", action);
+        }
+        tag_name = &args[2];
+        for i in 3..args.len() {
+            let device = args[i].split("-").collect::<Vec<&str>>()[0];
+            if device == "emulator" || device == "sdk_phone64_x86_64" {
+                panic!("releasing emulator is not yet supported");
+            }
+            builds.push(args[i].clone());
         }
     } else {
         panic!("unrecognized action");
@@ -1126,28 +1145,59 @@ fn main() {
             }
             "release" => {
                 if repo == "jOS-Updates" {
-                    let release_dir = format!(
-                        "../../grapheneos/releases/{}/release-felix-{}/",
-                        tag_name, tag_name
-                    );
-                    let status = Command::new("cp")
-                        .arg("-T")
-                        .arg(format!("{}felix-stable", release_dir))
-                        .arg("felix-stable")
-                        .status();
+                    for build in &builds {
+                        let split: Vec<&str> = build.split('-').collect();
+                        let device = get_device(split[0].to_string());
+                        let build_type = get_build_type(split[1].to_string());
+                        let channel: String;
+                        if build_type == BuildType::USER {
+                            channel = "stable".to_string();
+                            // copy beta anyway, just in case
+                            let status = Command::new("cp")
+                                .arg("-T")
+                                .arg(format!("{}{}-beta", format!(
+                                    "../../grapheneos/releases/{}/release-{}-{}/",
+                                    tag_name, device, tag_name
+                                ), device))
+                                .arg("felix-stable")
+                                .status();
 
-                    if status.is_err() {
-                        panic!(
-                            "Error copying stable release for {}: {}",
-                            repo,
-                            status.unwrap_err()
-                        );
+                            if status.is_err() {
+                                panic!(
+                                    "Error copying beta release for {}: {}",
+                                    device,
+                                    status.unwrap_err()
+                                );
+                            }
+                        } else if build_type == BuildType::UserDebug {
+                            channel = "beta".to_string();
+                        } else {
+                            // no idea how tf this happened, fuck it, set to beta
+                            channel = "beta".to_string();
+                        }
+                        let status = Command::new("cp")
+                            .arg("-T")
+                            .arg(format!("{}{}-{}", format!(
+                                "../../grapheneos/releases/{}/release-{}-{}/",
+                                tag_name, device, tag_name
+                            ), device, channel))
+                            .arg("felix-stable")
+                            .status();
+
+                        if status.is_err() {
+                            panic!(
+                                "Error copying {} release for {}: {}",
+                                channel,
+                                device,
+                                status.unwrap_err()
+                            );
+                        }
                     }
 
                     let status = Command::new("git").arg("add").arg(".").status();
 
                     if status.is_err() {
-                        panic!("Error adding files for {}: {}", repo, status.unwrap_err());
+                        panic!("Error adding files: {}", status.unwrap_err());
                     }
 
                     let status = Command::new("git")
@@ -1158,8 +1208,7 @@ fn main() {
 
                     if status.is_err() {
                         panic!(
-                            "Error committing files for {}: {}",
-                            repo,
+                            "Error committing files: {}",
                             status.unwrap_err()
                         );
                     }
@@ -1168,27 +1217,37 @@ fn main() {
 
                     if status.is_err() {
                         panic!(
-                            "Error pushing changes for {}: {}",
-                            repo,
+                            "Error pushing changes: {}",
                             status.unwrap_err()
                         );
                     }
 
-                    let status = Command::new("gh")
-                        .arg("release")
+                    let mut release = Command::new("gh");
+                    release.arg("release")
                         .arg("create")
                         .arg(tag_name)
                         .arg("--latest=true")
                         .arg("--notes-file")
-                        .arg("./release-notes.txt")
-                        .arg(format!("{}felix-ota_update-{}.zip", release_dir, tag_name))
-                        .arg(format!("{}felix-install-{}.zip", release_dir, tag_name))
-                        .status();
+                        .arg("./release-notes.txt");
+
+                    for build in &builds {
+                        let split: Vec<&str> = build.split('-').collect();
+                        let device = get_device(split[0].to_string());
+                        release.arg(format!("{}{}-ota_update-{}.zip", format!(
+                            "../../grapheneos/releases/{}/release-{}-{}/",
+                            tag_name, device, tag_name
+                        ), device, tag_name))
+                            .arg(format!("{}{}-install-{}.zip", format!(
+                                "../../grapheneos/releases/{}/release-{}-{}/",
+                                tag_name, device, tag_name
+                            ), device, tag_name));
+                    }
+
+                    let status = release.status();
 
                     if status.is_err() {
                         panic!(
-                            "Error creating release for {}: {}",
-                            repo,
+                            "Error creating release: {}",
                             status.unwrap_err()
                         );
                     }
