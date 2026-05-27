@@ -90,7 +90,6 @@ pub fn get_device(device: String) -> Device {
 }
 
 pub enum BuildType {
-    ENG, // eng
     UserDebug, // userdebug
     USER, // user
 }
@@ -98,7 +97,6 @@ pub enum BuildType {
 impl Display for BuildType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::ENG => f.write_str("eng"),
             Self::UserDebug => f.write_str("userdebug"),
             Self::USER => f.write_str("user"),
         }
@@ -107,7 +105,10 @@ impl Display for BuildType {
 
 pub fn get_build_type(build_type: String) -> BuildType {
     match build_type.as_str() {
-        "eng" => BuildType::ENG,
+        "eng" => {
+            println!("eng is not supported in GrapheneOS (and derivatives), using userdebug instead");
+            BuildType::UserDebug
+        },
         "userdebug" => BuildType::UserDebug,
         "user" => BuildType::USER,
         _=>default_to_user(),
