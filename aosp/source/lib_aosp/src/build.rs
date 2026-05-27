@@ -89,6 +89,7 @@ pub fn get_device(device: String) -> Device {
     }
 }
 
+#[derive(PartialEq)]
 pub enum BuildType {
     UserDebug, // userdebug
     USER, // user
