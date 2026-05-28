@@ -152,6 +152,3 @@ jobs:
           make_latest: true
           generate_release_notes: true
 
-      - name: Build FeliCa Test App
-        run: cd FeliCaTestApp && chmod +x gradlew && ./gradlew assembleRelease
-
