@@ -4,7 +4,6 @@ use std::process::Command;
 use quick_xml::Reader;
 use quick_xml::events::Event;
 use reqwest::blocking::get;
-use reqwest::get as async_get;
 
 fn fetch_common_sh_at_tag(tag: &str) -> String {
     let url = format!(
@@ -16,49 +15,6 @@ fn fetch_common_sh_at_tag(tag: &str) -> String {
         .expect("Failed to fetch file")
         .text()
         .expect("Failed to read body")
-}
-
-async fn fetch_common_sh_at_tag_async(tag: &str) -> String {
-    let url = format!(
-        "https://raw.githubusercontent.com/GrapheneOS/script/{}/common.sh",
-        tag
-    );
-
-    async_get(url)
-        .await
-        .expect("Failed to fetch file")
-        .text()
-        .await
-        .expect("Failed to read body")
-}
-
-pub async fn read_common_sh_async() -> (String, String, String) {
-    let contents = fetch_common_sh_at_tag_async(&latest_graphene_tag_async().await).await;
-
-    let mut aosp_tag = String::new();
-    let mut aosp_tag_old = String::new();
-    let mut branch = String::new();
-
-    for line in contents.lines() {
-        if line.starts_with("readonly aosp_tag=") {
-            aosp_tag = line
-                .trim_start_matches("readonly aosp_tag=")
-                .trim_matches('"')
-                .to_string();
-        } else if line.starts_with("readonly aosp_tag_old=") {
-            aosp_tag_old = line
-                .trim_start_matches("readonly aosp_tag_old=")
-                .trim_matches('"')
-                .to_string();
-        } else if line.starts_with("readonly branch=") {
-            branch = line
-                .trim_start_matches("readonly branch=")
-                .trim_matches('"')
-                .to_string();
-        }
-    }
-
-    (aosp_tag, aosp_tag_old, branch)
 }
 
 pub fn read_common_sh() -> (String, String, String) {
@@ -90,12 +46,11 @@ pub fn read_common_sh() -> (String, String, String) {
     (aosp_tag, aosp_tag_old, branch)
 }
 
-pub fn read_config_file() -> (String, String, String) {
+pub fn read_config_file() -> (String, String) {
     let graphene_tag = latest_graphene_tag();
     let graphene_tag_old = graphene_tag_from_manifest("platform_manifest/default.xml");
-    let lineage_latest_branch = latest_lineage_branch();
 
-    (graphene_tag, graphene_tag_old, lineage_latest_branch)
+    (graphene_tag, graphene_tag_old)
 }
 
 fn latest_graphene_tag() -> String {
@@ -106,31 +61,6 @@ fn latest_graphene_tag() -> String {
 
     let body = response
         .text()
-        .expect("Failed to read release metadata");
-
-    let line = body
-        .lines()
-        .next()
-        .expect("Release file was empty");
-
-    let tag = line
-        .split_whitespace()
-        .next()
-        .expect("Failed to parse release tag");
-
-    tag.to_string()
-}
-
-pub async fn latest_graphene_tag_async() -> String {
-    const URL: &str = "https://releases.grapheneos.org/felix-stable";
-
-    let response = async_get(URL)
-        .await
-        .expect("Failed to fetch GrapheneOS release metadata");
-
-    let body = response
-        .text()
-        .await
         .expect("Failed to read release metadata");
 
     let line = body
@@ -227,35 +157,6 @@ fn graphene_tag_from_manifest(path: &str) -> String {
     }
 
     panic!("grapheneos remote not found in manifest");
-}
-
-fn latest_lineage_branch() -> String {
-    let output = Command::new("git")
-        .args([
-            "ls-remote",
-            "--heads",
-            "https://github.com/LineageOS/android"
-        ])
-        .output()
-        .expect("Failed to query LineageOS branches");
-
-    let stdout = String::from_utf8(output.stdout)
-        .expect("Invalid UTF-8 from git");
-
-    let mut branches: Vec<String> = stdout
-        .lines()
-        .filter_map(|line| {
-            line.split("refs/heads/")
-                .nth(1)
-                .map(|s| s.to_string())
-        })
-        .filter(|b| b.starts_with("lineage-"))
-        .collect();
-
-    branches.sort();
-    branches.last()
-        .cloned()
-        .expect("No LineageOS branches found")
 }
 
 pub fn get_latest_tag() -> String {

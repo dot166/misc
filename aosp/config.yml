@@ -1,0 +1,55 @@
+additional_remotes:
+  - name: jos
+    fetch: https://github.com/dot166/
+additional_projects:
+  - path: external/AppStore
+    name: platform_external_AppStore
+    clone_depth: 1
+  - path: external/FocusLock
+    name: platform_external_FocusLock
+    clone_depth: 1
+  - path: external/Music
+    name: platform_external_Music
+    clone_depth: 1
+  - path: external/NightStand
+    name: platform_external_NightStand
+    clone_depth: 1
+  - path: j-lib 
+    name: jOS_j-lib
+    revision: main
+  - path: misc
+    name: misc
+    revision: main
+  - path: packages/apps/Etar
+    name: platform_packages_apps_Etar
+    groups: pdk-fs
+  - path: packages/apps/Recorder
+    name: platform_packages_apps_Recorder
+additional_non_manifest_repos:
+  forked_graphene_apps:
+    - AppStore
+  forked_graphene_system_components_oob:
+  independent:
+    - platform_manifest
+forked_repos:
+  jos:
+    aosp:
+    graphene:
+      - platform_build
+      - platform_build_release
+      - platform_frameworks_base
+      - platform_frameworks_libs_systemui
+      - platform_packages_apps_DeskClock
+      - platform_packages_apps_Dialer
+      - platform_packages_apps_Launcher3
+      - platform_packages_apps_Settings
+      - platform_packages_apps_SetupWizard2
+      - platform_packages_apps_Updater
+      - platform_packages_inputmethods_LatinIME
+      - platform_packages_services_Telecomm
+removed_repos:
+  - platform_external_AppStore
+  - platform_external_Auditor
+  - platform_external_Info
+  - platform_packages_apps_Calendar
+  - platform/packages/apps/Music

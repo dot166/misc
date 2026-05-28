@@ -4,4 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+quick-xml = { version = "0.40.1", features = ["serialize"] }
+anyhow = "1.0"
+tempfile = "3.5"
 lib_aosp = { path = "../lib_aosp" }
+chrono = "0.4.44"
