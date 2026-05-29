@@ -37,6 +37,7 @@ struct Pv {
     pv_id: String,
     #[serde(rename = "pvType")]
     pv_type: String,
+    disabled: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -159,7 +160,7 @@ fn cache_valid(path: &Path) -> bool {
 fn vocadb_id_to_url(song: &SongResponse) -> Result<String, String> {
     // Prefer original NicoNico, then original YouTube
     for pv in &song.pvs {
-        if pv.pv_type == "Original" && pv.service == "NicoNicoDouga" && !is_blocked_pv(pv.pv_id.clone()) {
+        if pv.pv_type == "Original" && pv.service == "NicoNicoDouga" && !is_blocked_pv(pv.pv_id.clone()) && !pv.disabled {
             return Ok(format!(
                 "https://www.nicovideo.jp/watch/{}",
                 pv.pv_id
@@ -168,7 +169,7 @@ fn vocadb_id_to_url(song: &SongResponse) -> Result<String, String> {
     }
 
     for pv in &song.pvs {
-        if pv.pv_type == "Original" && pv.service == "Youtube" && !is_blocked_pv(pv.pv_id.clone()) {
+        if pv.pv_type == "Original" && pv.service == "Youtube" && !is_blocked_pv(pv.pv_id.clone()) && !pv.disabled {
             return Ok(format!(
                 "https://www.youtube.com/watch?v={}",
                 pv.pv_id
@@ -180,7 +181,7 @@ fn vocadb_id_to_url(song: &SongResponse) -> Result<String, String> {
 
     // Prefer original NicoNico, then original YouTube
     for pv in &song.pvs {
-        if pv.pv_type == "Other" && pv.service == "NicoNicoDouga" && !is_blocked_pv(pv.pv_id.clone()) {
+        if pv.pv_type == "Other" && pv.service == "NicoNicoDouga" && !is_blocked_pv(pv.pv_id.clone()) && !pv.disabled {
             return Ok(format!(
                 "https://www.nicovideo.jp/watch/{}",
                 pv.pv_id
@@ -189,7 +190,7 @@ fn vocadb_id_to_url(song: &SongResponse) -> Result<String, String> {
     }
 
     for pv in &song.pvs {
-        if pv.pv_type == "Other" && pv.service == "Youtube" && !is_blocked_pv(pv.pv_id.clone()) {
+        if pv.pv_type == "Other" && pv.service == "Youtube" && !is_blocked_pv(pv.pv_id.clone()) && !pv.disabled {
             return Ok(format!(
                 "https://www.youtube.com/watch?v={}",
                 pv.pv_id
