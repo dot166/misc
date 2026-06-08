@@ -25,6 +25,7 @@ import androidx.annotation.RequiresPermission
 import androidx.core.view.doOnPreDraw
 import androidx.preference.PreferenceManager
 import com.google.android.gsa.overlay.controllers.OverlayController
+import io.github.dot166.jlib.app.DefaultSharedPrefsManager
 
 class NexusOverlay(
     private val uid: Int,
@@ -134,11 +135,10 @@ class NexusOverlay(
                             Intent("io.github.dot166.nexus.WINDOW_OVERLAY_PROVIDER").apply {
                                 component =
                                     ComponentName.unflattenFromString(
-                                        PreferenceManager.getDefaultSharedPreferences(
+                                        DefaultSharedPrefsManager.getSharedPreferencesStorage(
                                             this@NexusOverlay
                                         ).getString(
-                                            "feed_provider",
-                                            "io.github.dot166.nexus/io.github.dot166.nexus.DefaultStub"
+                                            "feed_provider"
                                         )
                                             ?: "io.github.dot166.nexus/io.github.dot166.nexus.DefaultStub" // return stub activity when not set or null, prevents user confusion
                                     )
