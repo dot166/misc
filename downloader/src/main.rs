@@ -203,9 +203,9 @@ fn vocadb_id_to_url(song: &SongResponse) -> Result<String, String> {
 
 fn is_blocked_pv(id: String) -> bool {
     if id == "sm12276096" {
-        return true;
+        true
     } else {
-        return false;
+        false
     }
 }
 
@@ -270,36 +270,42 @@ fn download_audio(
     let song_path = work_dir.join("song.mp3");
     let cover_path = work_dir.join("cover.jpg");
     let log_path = work_dir.join("worker.log");
+    let out_file_string = &format!("{}/{}.mp3", output_dir, meta.id);
+    let out_file = Path::new(out_file_string.as_str());
 
     let log_file = File::create(&log_path)
         .map_err(|e| format!("Failed to create log file: {}", e))?;
 
-    let status = Command::new("yt-dlp")
-        .args(&[
-            "-x",
-            "--audio-format", "mp3",
-            "--audio-quality", "0",
-            "-o",
-            song_path.to_str().unwrap(),
-            &meta.url,
-        ])
-        .stdout(Stdio::from(log_file.try_clone().unwrap()))
-        .stderr(Stdio::from(log_file.try_clone().unwrap()))
-        .status()
-        .map_err(|e| format!("Failed to run yt-dlp: {}", e))?;
+    if out_file.exists() {
+        fs::copy(out_file, &song_path).unwrap();
+        fs::write(&log_path, format!("song {} has already been downloaded, updating metadata", meta.id)).unwrap();
+    } else {
+        let status = Command::new("yt-dlp")
+            .args(&[
+                "-x",
+                "--audio-format", "mp3",
+                "--audio-quality", "0",
+                "-o",
+                song_path.to_str().unwrap(),
+                &meta.url,
+            ])
+            .stdout(Stdio::from(log_file.try_clone().unwrap()))
+            .stderr(Stdio::from(log_file.try_clone().unwrap()))
+            .status()
+            .map_err(|e| format!("Failed to run yt-dlp: {}", e))?;
 
-    if !status.success() {
-        let log: String;
-        if env::var("CI").is_ok() {
-            log = format!("logs: {}", fs::read_to_string(log_path).unwrap())
-        } else {
-            log = format!("(see {})", log_path.display().to_string())
+        if !status.success() {
+            let log = if env::var("CI").is_ok() {
+                format!("logs: {}", fs::read_to_string(log_path).unwrap())
+            } else {
+                format!("(see {})", log_path.display().to_string())
+            };
+            return Err(format!(
+                "yt-dlp failed for {} {}",
+                meta.url,
+                log
+            ));
         }
-        return Err(format!(
-            "yt-dlp failed for {} {}",
-            meta.url,
-            log
-        ));
     }
 
     let status2 = Command::new("ffmpeg")
@@ -318,11 +324,7 @@ fn download_audio(
             "-metadata:s:v", "title=Album cover",
             "-metadata:s:v", "comment=Cover (front)",
             "-metadata", &format!("comment=Metadata from VocaDB (https://vocadb.net), ID: {}", meta.id),
-            &format!(
-                "{}/{}.mp3",
-                output_dir,
-                meta.id,
-            ),
+            out_file_string,
         ])
         .stdout(Stdio::from(log_file.try_clone().unwrap()))
         .stderr(Stdio::from(log_file))
@@ -330,12 +332,11 @@ fn download_audio(
         .map_err(|e| format!("Failed to run ffmpeg: {}", e))?;
 
     if !status2.success() {
-        let log: String;
-        if env::var("CI").is_ok() {
-            log = format!("logs: {}", fs::read_to_string(log_path).unwrap())
+        let log = if env::var("CI").is_ok() {
+            format!("logs: {}", fs::read_to_string(log_path).unwrap())
         } else {
-            log = format!("(see {})", log_path.display().to_string())
-        }
+            format!("(see {})", log_path.display().to_string())
+        };
         return Err(format!(
             "ffmpeg failed for {} {}",
             meta.name,
@@ -351,7 +352,7 @@ async fn process_song(
     output_dir: String,
     bar: ProgressBar,
 ) -> Result<(), String> {
-    let job_dir: PathBuf = std::env::temp_dir()
+    let job_dir: PathBuf = env::temp_dir()
         .join(format!("vocaloid_job_{}", Uuid::new_v4()));
 
     fs::create_dir_all(&job_dir)
@@ -382,7 +383,7 @@ async fn process_song(
 
     match result {
         Ok(Ok(())) => {
-            std::fs::remove_dir_all(&job_dir).ok();
+            fs::remove_dir_all(&job_dir).ok();
             bar.finish_with_message(format!("Done: {}", name));
             Ok(())
         }
@@ -405,19 +406,19 @@ fn is_in_unhappy_refrain(id: i32) -> bool {
 
 fn get_album_name(id: i32, name: String) -> String {
     if is_in_unhappy_refrain(id) {
-        return "アンハッピーリフレイン".to_string(); // use the same name that vocadb supplies for it, we do not request the name from vocadb as it (most likely) will never change and i do not want to hammer vocadb`s api to get an album name that probably will never be different, it has not changed since its release in 2011, so safe to assume that it will be 'アンハッピーリフレイン'
+        "アンハッピーリフレイン".to_string() // use the same name that vocadb supplies for it, we do not request the name from vocadb as it (most likely) will never change and I do not want to hammer vocadb`s api to get an album name that probably will never be different, it has not changed since its release in 2011, so safe to assume that it will be 'アンハッピーリフレイン'
     } else {
-        return name;
+        name
     }
 }
 
 fn get_album_art(id: i32, url: String) -> String {
     if is_in_unhappy_refrain(id) {
-        return "https://static.vocadb.net/img/Album/mainOrig/79.jpg?v=27".to_string(); 
+        "https://static.vocadb.net/img/Album/mainOrig/79.jpg?v=27".to_string()
     } else if id == 1032 {
-        return "https://nicovideo.cdn.nimg.jp/thumbnails/6666016/6666016".to_string(); // vocadb has a broken thumbnail for ロミオとシンデレラ, so provide our own
+        "https://nicovideo.cdn.nimg.jp/thumbnails/6666016/6666016".to_string() // vocadb has a broken thumbnail for ロミオとシンデレラ, so provide our own
     } else {
-        return url;
+        url
     }
 }
 
@@ -461,7 +462,7 @@ async fn main() {
         .for_each_concurrent(max_parallel, |job| {
             let bar = mp.add(ProgressBar::new_spinner());
             bar.set_style(style.clone());
-            bar.enable_steady_tick(std::time::Duration::from_millis(100));
+            bar.enable_steady_tick(Duration::from_millis(100));
 
             let out = default_output_dir.clone();
             let failures = failures.clone();
