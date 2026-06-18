@@ -3,5 +3,6 @@
     <privapp-permissions package="io.github.dot166.nexus">
         <permission name="android.permission.ACTIVITY_EMBEDDING"/>
         <permission name="android.permission.INJECT_EVENTS"/>
+        <permission name="android.permission.MODIFY_DAY_NIGHT_MODE"/>
     </privapp-permissions>
 </permissions>

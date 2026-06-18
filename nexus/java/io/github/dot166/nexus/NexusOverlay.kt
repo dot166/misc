@@ -23,7 +23,6 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.annotation.RequiresPermission
 import androidx.core.view.doOnPreDraw
-import androidx.preference.PreferenceManager
 import com.google.android.gsa.overlay.controllers.OverlayController
 import io.github.dot166.jlib.app.DefaultSharedPrefsManager
 
@@ -49,6 +48,7 @@ class NexusOverlay(
 
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
+        enableEdgeToEdge()
         container?.fitsSystemWindows = false
         window?.let {
             it.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)

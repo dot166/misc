@@ -5,6 +5,7 @@ import com.android.settingslib.spa.framework.common.SettingsPageProviderReposito
 import com.android.settingslib.spa.framework.common.createSettingsPage
 import io.github.dot166.jlib.app.DefaultHomePageProvider
 import io.github.dot166.jlib.app.JLibSpaEnvironment
+import io.github.dot166.nexus.setup.Page1
 import io.github.dot166.nexus.setup.SetupWizardProvider
 
 class NexusSpaEnvironment(context: Context) : JLibSpaEnvironment(context) {
@@ -13,6 +14,7 @@ class NexusSpaEnvironment(context: Context) : JLibSpaEnvironment(context) {
             allPageProviders =
                 listOf(
                     SetupWizardProvider,
+                    Page1,
                     HomePageProvider,
                 ),
             rootPages = listOf(SetupWizardProvider.createSettingsPage(), HomePageProvider.createSettingsPage()),
