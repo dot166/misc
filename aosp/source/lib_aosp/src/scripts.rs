@@ -54,7 +54,7 @@ pub fn read_config_file() -> (String, String) {
 }
 
 fn latest_graphene_tag() -> String {
-    const URL: &str = "https://releases.grapheneos.org/felix-stable";
+    const URL: &str = "https://releases.grapheneos.org/felix-alpha";
 
     let response = get(URL)
         .expect("Failed to fetch GrapheneOS release metadata");
