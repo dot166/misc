@@ -1025,7 +1025,7 @@ fn main() -> Result<()> {
                                     "../../grapheneos/releases/{}/release-{}-{}/",
                                     tag_name, device, tag_name
                                 ), device))
-                                .arg("felix-stable")
+                                .arg(format!("{}-beta", device))
                                 .status();
 
                             if status.is_err() {
@@ -1047,7 +1047,7 @@ fn main() -> Result<()> {
                                 "../../grapheneos/releases/{}/release-{}-{}/",
                                 tag_name, device, tag_name
                             ), device, channel))
-                            .arg("felix-stable")
+                            .arg(format!("{}-{}", device, channel))
                             .status();
 
                         if status.is_err() {

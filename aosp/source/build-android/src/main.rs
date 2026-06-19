@@ -13,7 +13,7 @@ fn main() {
         if build[0] == "emulator" {
             build[0] = "sdk_phone64_x86_64";
         }
-        let device = build::get_device((&build[1]).parse().unwrap());
+        let device = build::get_device((&build[0]).parse().unwrap());
 
         build::build_aosp(device, build_type);
     }
