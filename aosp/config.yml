@@ -31,6 +31,7 @@ additional_non_manifest_repos:
   forked_graphene_system_components_oob:
   independent:
     - platform_manifest
+    - jOS-Updates
 forked_repos:
   jos:
     aosp:
