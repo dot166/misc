@@ -650,7 +650,7 @@ fn main() -> Result<()> {
     let additional_non_manifest_config = config.additional_non_manifest_repos.clone();
     let forked_config = config.forked_repos.get("jos").unwrap();
     let mut aosp_forks: Vec<String> = Vec::new();
-    aosp_forks.append(forked_config.clone().get_mut("aosp").unwrap());
+    aosp_forks.append(forked_config.clone().get_mut("aosp").unwrap().iter().map(|s| make_fork_name(s)).collect::<Vec<String>>().as_mut());
     let mut grapheneos_forks: Vec<String> = Vec::new();
     grapheneos_forks.append(forked_config.clone().get_mut("graphene").unwrap());
     let mut grapheneos_app_forks: Vec<String> = Vec::new();

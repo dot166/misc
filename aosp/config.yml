@@ -35,6 +35,7 @@ additional_non_manifest_repos:
 forked_repos:
   jos:
     aosp:
+      - platform/packages/modules/Telephony
     graphene:
       - platform_build
       - platform_build_release
