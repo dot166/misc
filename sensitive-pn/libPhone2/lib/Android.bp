@@ -6,8 +6,4 @@ android_library_import {
         "//apex_available:platform",
         "//apex_available:anyapex",
     ],
-    static_libs: [
-        "libphonenumber",
-        "androidx.annotation_annotation",
-    ],
 }

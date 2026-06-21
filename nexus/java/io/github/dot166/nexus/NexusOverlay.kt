@@ -183,7 +183,7 @@ class NexusOverlay(
                 val tasks = am.getAppTasks()
 
                 for (task in tasks) {
-                    val info = task.taskInfo
+                    val info = task.taskInfo ?: continue
                     if (info.displayId == vd!!.display.displayId) {
                         task.finishAndRemoveTask()
                     }
