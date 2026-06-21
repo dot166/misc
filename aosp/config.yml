@@ -39,7 +39,6 @@ forked_repos:
       - platform_build
       - platform_build_release
       - platform_frameworks_base
-      - platform_frameworks_libs_systemui
       - platform_packages_apps_DeskClock
       - platform_packages_apps_Dialer
       - platform_packages_apps_Launcher3
