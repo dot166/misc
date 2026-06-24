@@ -855,6 +855,19 @@ fn main() -> Result<()> {
                         status.unwrap_err()
                     );
                 }
+
+                if repo == "platform_frameworks_base" {
+                    // trigger SettingsLib release script
+                    let status = Command::new("gh")
+                    .arg("workflow")
+                    .arg("run")
+                    .arg("build.yml")
+                    .status();
+
+                    if status.is_err() {
+                        panic!("Error releasing SettingsLib: {}", status.unwrap_err());
+                    }
+                }
             }
             "update" => {
                 let status = Command::new("git")
