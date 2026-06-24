@@ -862,6 +862,8 @@ fn main() -> Result<()> {
                     .arg("workflow")
                     .arg("run")
                     .arg("build.yml")
+                    .arg("-f")
+                    .arg(format!("buildNum={}", tag_name))
                     .status();
 
                     if status.is_err() {
