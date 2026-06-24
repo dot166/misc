@@ -35,7 +35,6 @@ additional_non_manifest_repos:
 forked_repos:
   jos:
     aosp:
-      - platform/packages/modules/Telephony
     graphene:
       - platform_build
       - platform_build_release
@@ -47,7 +46,6 @@ forked_repos:
       - platform_packages_apps_SetupWizard2
       - platform_packages_apps_Updater
       - platform_packages_inputmethods_LatinIME
-      - platform_packages_services_Telecomm
 removed_repos:
   - platform_external_AppStore
   - platform_external_Auditor
