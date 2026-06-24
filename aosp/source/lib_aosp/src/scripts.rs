@@ -54,7 +54,6 @@ pub fn read_config_file() -> (String, String) {
 }
 
 fn latest_graphene_tag() -> String {
-    return "2026061800".to_string();
     const URL: &str = "https://releases.grapheneos.org/felix-alpha";
 
     let response = get(URL)
