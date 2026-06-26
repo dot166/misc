@@ -122,8 +122,8 @@ class NexusOverlay(
                         vd =
                             dm.createVirtualDisplay(
                                 "overlay",
-                                width,
-                                height,
+                                metrics.widthPixels,
+                                metrics.heightPixels,
                                 metrics.densityDpi,
                                 Surface(surface),
                                 DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC or DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY or DisplayManager.VIRTUAL_DISPLAY_FLAG_DESTROY_CONTENT_ON_REMOVAL
@@ -157,7 +157,7 @@ class NexusOverlay(
                         val dm = getSystemService(DISPLAY_SERVICE) as DisplayManager
                         val metrics = DisplayMetrics()
                         dm.getDisplay(Display.DEFAULT_DISPLAY).getRealMetrics(metrics)
-                        vd!!.resize(width, height, metrics.densityDpi)
+                        vd!!.resize(metrics.widthPixels, metrics.heightPixels, metrics.densityDpi)
                     }
 
                     override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
