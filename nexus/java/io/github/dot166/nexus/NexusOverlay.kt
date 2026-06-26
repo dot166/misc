@@ -48,7 +48,6 @@ class NexusOverlay(
 
     override fun onCreate(bundle: Bundle?) {
         super.onCreate(bundle)
-        enableEdgeToEdge()
         container?.fitsSystemWindows = false
         window?.let {
             it.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
