@@ -1,12 +1,12 @@
-use lib_aosp::build::{get_build_type, get_device, BuildType};
+use anyhow::{ensure, Context, Result};
+use lib_aosp::build::get_device;
 use lib_aosp::scripts;
-use std::process::Command;
-use std::{env, fs, path::Path};
-use anyhow::{Context, Result, ensure};
 use quick_xml::de::from_str;
 use serde::{Deserialize, Serialize};
 use serde_yaml;
 use std::collections::{HashMap, HashSet};
+use std::process::Command;
+use std::{env, fs, path::Path};
 use tempfile::TempDir;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -594,7 +594,7 @@ fn main() -> Result<()> {
     }
     let action = args[1].clone();
     let mut tag_name = "";
-    let mut builds: Vec<String> = Vec::new();
+    let mut builds: Vec<&str> = Vec::new();
 
     if action == "update"
         || action == "default"
@@ -634,11 +634,11 @@ fn main() -> Result<()> {
         }
         tag_name = &args[2];
         for i in 3..args.len() {
-            let device = args[i].split("-").collect::<Vec<&str>>()[0];
+            let device = args[i].as_str();
             if device == "emulator" || device == "sdk_phone64_x86_64" {
                 panic!("releasing emulator is not yet supported");
             }
-            builds.push(args[i].clone());
+            builds.push(device);
         }
     } else {
         panic!("unrecognized action");
@@ -1027,48 +1027,36 @@ fn main() -> Result<()> {
             "release" => {
                 if repo == "jOS-Updates" {
                     for build in &builds {
-                        let split: Vec<&str> = build.split('-').collect();
-                        let device = get_device(split[0].to_string());
-                        let build_type = get_build_type(split[1].to_string());
-                        let channel: String;
-                        if build_type == BuildType::USER {
-                            channel = "stable".to_string();
-                            // copy beta anyway, just in case
-                            let status = Command::new("cp")
-                                .arg("-T")
-                                .arg(format!("{}{}-beta", format!(
-                                    "../../grapheneos/releases/{}/release-{}-{}/",
-                                    tag_name, device, tag_name
-                                ), device))
-                                .arg(format!("{}-beta", device))
-                                .status();
-
-                            if status.is_err() {
-                                panic!(
-                                    "Error copying beta release for {}: {}",
-                                    device,
-                                    status.unwrap_err()
-                                );
-                            }
-                        } else if build_type == BuildType::UserDebug {
-                            channel = "beta".to_string();
-                        } else {
-                            // no idea how tf this happened, fuck it, set to beta
-                            channel = "beta".to_string();
-                        }
+                        let device = get_device(build.to_string());
+                        // copy beta anyway, just in case
                         let status = Command::new("cp")
                             .arg("-T")
-                            .arg(format!("{}{}-{}", format!(
+                            .arg(format!("{}{}-beta", format!(
                                 "../../grapheneos/releases/{}/release-{}-{}/",
                                 tag_name, device, tag_name
-                            ), device, channel))
-                            .arg(format!("{}-{}", device, channel))
+                            ), device))
+                            .arg(format!("{}-beta", device))
                             .status();
 
                         if status.is_err() {
                             panic!(
-                                "Error copying {} release for {}: {}",
-                                channel,
+                                "Error copying beta release for {}: {}",
+                                device,
+                                status.unwrap_err()
+                            );
+                        }
+                        let status = Command::new("cp")
+                            .arg("-T")
+                            .arg(format!("{}{}-stable", format!(
+                                "../../grapheneos/releases/{}/release-{}-{}/",
+                                tag_name, device, tag_name
+                            ), device))
+                            .arg(format!("{}-stable", device))
+                            .status();
+
+                        if status.is_err() {
+                            panic!(
+                                "Error copying stable release for {}: {}",
                                 device,
                                 status.unwrap_err()
                             );

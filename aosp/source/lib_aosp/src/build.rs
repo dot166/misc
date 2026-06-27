@@ -85,44 +85,11 @@ pub fn get_device(device: String) -> Device {
         "raven" => Device::Raven,
         "oriole" => Device::Oriole,
         "sdk_phone64_x86_64" => Device::SdkPhone64X8664,
-        _=>panic!("Device is currently unsupported by this script, please check https://grapheneos.org/build for manual build instructions"),
+        _=>panic!("Device {} is currently unsupported by this script, please check https://grapheneos.org/build for manual build instructions", device),
     }
 }
 
-#[derive(PartialEq)]
-pub enum BuildType {
-    UserDebug, // userdebug
-    USER, // user
-}
-
-impl Display for BuildType {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::UserDebug => f.write_str("userdebug"),
-            Self::USER => f.write_str("user"),
-        }
-    }
-}
-
-pub fn get_build_type(build_type: String) -> BuildType {
-    match build_type.as_str() {
-        "eng" => {
-            println!("eng is not supported in GrapheneOS (and derivatives), using userdebug instead");
-            BuildType::UserDebug
-        },
-        "userdebug" => BuildType::UserDebug,
-        "user" => BuildType::USER,
-        _=>default_to_user(),
-    }
-}
-
-fn default_to_user() -> BuildType {
-    println!("the selected build variant is currently unsupported by this script.");
-    println!("using default (user) instead");
-    BuildType::USER
-}
-
-pub fn build_aosp(device: Device, build_type: BuildType) {
+pub fn build_aosp(device: Device) {
     require_top();
     env::set_current_dir(get_top().unwrap()).unwrap();
     let build_args;
@@ -190,7 +157,7 @@ pub fn build_aosp(device: Device, build_type: BuildType) {
     }
     let output = Command::new("bash")
         .arg("-c")
-        .arg(format!("source build/envsetup.sh && lunch {}-cur-{} && sudo rm -rf out && m {} && {}", device, build_type, build_args, extra_args))
+        .arg(format!("source build/envsetup.sh && lunch {}-cur-user && sudo rm -rf out && m {} && {}", device, build_args, extra_args))
         .spawn()
         .unwrap()
         .wait_with_output()
