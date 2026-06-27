@@ -1028,23 +1028,6 @@ fn main() -> Result<()> {
                 if repo == "jOS-Updates" {
                     for build in &builds {
                         let device = get_device(build.to_string());
-                        // copy beta anyway, just in case
-                        let status = Command::new("cp")
-                            .arg("-T")
-                            .arg(format!("{}{}-beta", format!(
-                                "../../grapheneos/releases/{}/release-{}-{}/",
-                                tag_name, device, tag_name
-                            ), device))
-                            .arg(format!("{}-beta", device))
-                            .status();
-
-                        if status.is_err() {
-                            panic!(
-                                "Error copying beta release for {}: {}",
-                                device,
-                                status.unwrap_err()
-                            );
-                        }
                         let status = Command::new("cp")
                             .arg("-T")
                             .arg(format!("{}{}-stable", format!(
@@ -1100,8 +1083,7 @@ fn main() -> Result<()> {
                         .arg("./release-notes.txt");
 
                     for build in &builds {
-                        let split: Vec<&str> = build.split('-').collect();
-                        let device = get_device(split[0].to_string());
+                        let device = get_device(build.to_string());
                         release.arg(format!("{}{}-ota_update-{}.zip", format!(
                             "../../grapheneos/releases/{}/release-{}-{}/",
                             tag_name, device, tag_name
