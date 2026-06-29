@@ -14,7 +14,7 @@ pub fn generate_utau_projects(replacement_strings: Vec<&str>) {
     let speech_template = fs::read_to_string("templates/word.txt").unwrap();
 
     let mut updated_content = file_template;
-    let mut total_dur = 0;
+    let mut total_dur = snap_to_grid(300, 60); // add padding of 10 grid space
 
     let mut output_path = PathBuf::from("output");
     fs::create_dir_all(&output_path).unwrap();

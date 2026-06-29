@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="EMPTY_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/libmomone/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/note-timings/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tts/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/libmomone/target" />
+      <excludeFolder url="file://$MODULE_DIR$/note-timings/target" />
+      <excludeFolder url="file://$MODULE_DIR$/tts/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>
