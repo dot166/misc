@@ -31,12 +31,7 @@ android_app {
     srcs: [
         "java/**/*.kt",
         "java/**/*.java",
-        "aidl/**/*.aidl",
     ],
-
-    aidl: {
-        local_include_dirs: ["aidl"],
-    },
 
     resource_dirs: [
         "res",
