@@ -2,12 +2,60 @@ package com.google.android.gsa.overlay.ui.panel
 
 import android.graphics.Rect
 import android.view.MotionEvent
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.savedstate.SavedStateRegistry
+import androidx.savedstate.SavedStateRegistryController
+import androidx.savedstate.SavedStateRegistryOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.google.android.gsa.overlay.controllers.OverlayController
 
 class OverlayControllerSlidingPanelLayout(private val overlayController: OverlayController?) :
     SlidingPanelLayout(
         overlayController
-    ) {
+    ), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
+
+    private val lifecycleRegistry = LifecycleRegistry(this)
+    override val lifecycle: Lifecycle get() = lifecycleRegistry
+
+    private val privateViewModelStore = ViewModelStore()
+    override val viewModelStore: ViewModelStore get() = privateViewModelStore
+
+    private val savedStateController = SavedStateRegistryController.create(this)
+    override val savedStateRegistry: SavedStateRegistry get() = savedStateController.savedStateRegistry
+    init {
+        savedStateController.performRestore(null)
+
+        setViewTreeLifecycleOwner(this)
+        setViewTreeSavedStateRegistryOwner(this)
+        setViewTreeViewModelStoreOwner(this)
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        lifecycleRegistry.currentState = Lifecycle.State.CREATED
+        lifecycleRegistry.currentState = Lifecycle.State.RESUMED
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+        privateViewModelStore.clear()
+    }
+
+    override fun onWindowVisibilityChanged(visibility: Int) {
+        super.onWindowVisibilityChanged(visibility)
+        if (visibility == VISIBLE) {
+            lifecycleRegistry.currentState = Lifecycle.State.RESUMED
+        } else {
+            lifecycleRegistry.currentState = Lifecycle.State.STARTED
+        }
+    }
     override fun determineScrollingStart(motionEvent: MotionEvent, f: Float) {
         var obj: Any? = 1
         if (motionEvent.findPointerIndex(mActivePointerId) != -1) {
