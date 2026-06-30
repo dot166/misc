@@ -1,10 +1,12 @@
 [versions]
 agp = "9.2.1"
-jLib = "104.2.29"
+compose = "2.4.0"
+jLib = "104.4.3"
 
 [libraries]
 jLib = { group = "io.github.dot166", name = "j-Lib", version.ref = "jLib" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "compose" }
 

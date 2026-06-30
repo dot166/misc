@@ -23,7 +23,7 @@ import android.view.View
 import android.widget.TextClock
 import android.widget.TextView
 import androidx.core.graphics.toColorInt
-import androidx.preference.PreferenceManager
+import io.github.dot166.jlib.app.DefaultSharedPrefsManager
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -248,8 +248,8 @@ object Utils {
     fun init(ctx: Context) {
         val dp = ctx.createDeviceProtectedStorageContext()
         mPrefs = Settings(
-            PreferenceManager.getDefaultSharedPreferences(dp),
-            dp.getString(R.string.default_clock_color)
+            DefaultSharedPrefsManager.getSharedPreferencesStorage(dp),
+            "FFC0CB"
         )
         mPeriodicCallbackModel = PeriodicCallbackModel(dp)
     }
@@ -281,27 +281,34 @@ object Utils {
         mPeriodicCallbackModel!!.removePeriodicCallback(runnable)
     }
 
-    val screensaverClockColor: String
+    var screensaverClockColor: String
         get() = mPrefs!!.getScreensaverClockColor()
+        set(value) = mPrefs!!.setScreensaverClockColor(value)
 
-    val screensaverClockNightModeColor: String
+    var screensaverClockNightModeColor: String
         get() = mPrefs!!.getClockNightModeColor()
+        set(value) = mPrefs!!.setClockNightModeColor(value)
 
-    val screensaverNightModeDndOn: Boolean
+    var screensaverNightModeDndOn: Boolean
         get() = mPrefs!!.getScreensaverNightModeDndOn()
+        set(value) = mPrefs!!.setScreensaverNightModeDndOn(value)
 
-    val screensaverNightModeBrightness: Int
+    var screensaverNightModeBrightness: Int
         get() = mPrefs!!.getScreensaverNightModeBrightness()
+        set(value) = mPrefs!!.setScreensaverNightModeBrightness(value)
 
     @JvmStatic
-    val screensaverNightModeOn: Boolean
+    var screensaverNightModeOn: Boolean
         get() = mPrefs!!.getScreensaverNightModeOn()
+        set(value) = mPrefs!!.setScreensaverNightModeOn(value)
 
-    val screensaverShowAmPmOn: Boolean
+    var screensaverShowAmPmOn: Boolean
         get() = mPrefs!!.getScreensaverShowAmPmOn()
+        set(value) = mPrefs!!.setScreensaverShowAmPmOn(value)
 
-    val screensaverBoldTextOn: Boolean
+    var screensaverBoldTextOn: Boolean
         get() = mPrefs!!.getScreensaverBoldTextOn()
+        set(value) = mPrefs!!.setScreensaverBoldTextOn(value)
 
     @JvmStatic
     fun getScaleAnimator(view: View?, vararg values: Float): ValueAnimator {

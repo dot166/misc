@@ -10,6 +10,7 @@ if (useKeystoreProperties) {
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.compose)
 }
 
 android {
@@ -26,16 +27,16 @@ android {
     }
     namespace = "io.github.dot166.nightstand"
     compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
+        version = release(37) {
+            minorApiLevel = 0
         }
     }
 
     defaultConfig {
         applicationId = "io.github.dot166.nightstand"
         minSdk = 31
-        targetSdk = 36
-        versionCode = 3
+        targetSdk = 37
+        versionCode = 4
         versionName = versionCode.toString()
     }
 
@@ -57,6 +58,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+    buildFeatures {
+        compose = true
     }
 }
 

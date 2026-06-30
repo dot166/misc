@@ -11,7 +11,7 @@
       android:theme="@style/Theme.Material3Expressive.DayNight.NoActionBar"
       tools:replace="android:name">
     <activity
-        android:name=".SettingsActivity"
+        android:name="io.github.dot166.jlib.app.PreferenceMainActivity"
         android:exported="true"
         android:excludeFromRecents="true"
         android:label="@string/screensaver_settings"
