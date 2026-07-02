@@ -157,7 +157,7 @@ pub fn build_aosp(device: Device) {
     }
     let output = Command::new("bash")
         .arg("-c")
-        .arg(format!("source build/envsetup.sh && lunch {}-cur-user && sudo rm -rf out && m {} && {}", device, build_args, extra_args))
+        .arg(format!("source build/envsetup.sh && lunch {}-cur-user && rm -rf out && m {} && {}", device, build_args, extra_args))
         .spawn()
         .unwrap()
         .wait_with_output()
