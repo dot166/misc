@@ -1,6 +1,6 @@
 [versions]
 agp = "9.2.1"
-compose = "2.4.0"
+compose = "2.4.10"
 jLib = "104.4.3"
 
 [libraries]
