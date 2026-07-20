@@ -1,0 +1,16 @@
+[versions]
+agp = "9.2.1"
+appcompat = "1.7.1"
+kotlin = "2.4.0"
+generateBp = "+"
+maven = "0.37.0"
+
+[libraries]
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+
+[plugins]
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
+maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven" }
+lineageos-generatebp = { id = "org.lineageos.generatebp", version.ref = "generateBp" }
+

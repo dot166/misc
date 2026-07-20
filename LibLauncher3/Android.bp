@@ -1,0 +1,30 @@
+android_library {
+    name: "LibLauncher3",
+    static_libs: [
+        // DO NOT EDIT THIS SECTION MANUALLY
+        "androidx.appcompat_appcompat",
+        "kotlin-parcelize-runtime",
+        "kotlin-stdlib",
+    ],
+
+    manifest: "AndroidManifest.xml",
+
+    srcs: [
+        "java/**/*.kt",
+        "java/**/*.java",
+        "aidl/**/*.aidl",
+    ],
+
+    aidl: {
+        local_include_dirs: ["aidl"],
+    },
+
+    resource_dirs: [
+        "res",
+    ],
+    use_resource_processor: true,
+
+    kotlincflags: ["-Xjvm-default=all"],
+    sdk_version: "current",
+    min_sdk_version: "31",
+}
