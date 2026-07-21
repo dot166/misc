@@ -46,8 +46,8 @@ abstract class BottomBarDataSource(
     final override fun setEnabled(bool: Boolean) = sharedPreferences.edit { putBoolean(enabledPreferenceKey, bool) }
     final override fun getName(localeString: String) =
         getLocalizedResources(LocaleUtils.toLocale(localeString)).getString(providerName)
-    final override fun isAvailable() = isAvailable
-    final override fun getDisabledTargets() = disabledTargets
+    final override fun isAvailableFunction() = isAvailable
+    final override fun getDisabledTargetsFunction() = disabledTargets
     override fun requiresSetup() = false
     override fun startSetup() {}
     private fun getLocalizedResources(desiredLocale: Locale): Resources {

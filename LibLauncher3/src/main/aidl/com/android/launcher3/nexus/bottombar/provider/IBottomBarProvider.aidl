@@ -7,8 +7,8 @@ interface IBottomBarProvider {
     boolean getEnabled();
     void setEnabled(boolean bool);
     String getName(String localeString);
-    boolean isAvailable();
-    List<SmartspaceTarget> getDisabledTargets();
+    boolean isAvailableFunction();
+    List<SmartspaceTarget> getDisabledTargetsFunction();
     boolean requiresSetup();
     void startSetup();
 }
