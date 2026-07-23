@@ -7,20 +7,20 @@ android_library {
         "kotlin-stdlib",
     ],
 
-    manifest: "AndroidManifest.xml",
+    manifest: "src/main/AndroidManifest.xml",
 
     srcs: [
-        "java/**/*.kt",
-        "java/**/*.java",
-        "aidl/**/*.aidl",
+        "src/main/java/**/*.kt",
+        "src/main/java/**/*.java",
+        "src/main/aidl/**/*.aidl",
     ],
 
     aidl: {
-        local_include_dirs: ["aidl"],
+        local_include_dirs: ["src/main/aidl"],
     },
 
     resource_dirs: [
-        "res",
+        "src/main/res",
     ],
     use_resource_processor: true,
 
