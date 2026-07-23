@@ -24,7 +24,8 @@ android_library {
     ],
     use_resource_processor: true,
 
-    kotlincflags: ["-Xjvm-default=all", "-Xplugin=${config.KotlinParcelizePlugin}"],
+    kotlincflags: ["-Xjvm-default=all"],
+    kotlin_plugins: ["kotlin-parcelize-compiler-plugin"],
     sdk_version: "current",
     min_sdk_version: "31",
 }
