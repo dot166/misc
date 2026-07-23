@@ -5,19 +5,10 @@
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
         <option name="testRunner" value="CHOOSE_PER_TEST" />
-        <option name="externalProjectPath" value="$USER_HOME$/Git/misc/LibLauncher3" />
-        <option name="modules">
-          <set>
-            <option value="$USER_HOME$/Git/misc/LibLauncher3" />
-          </set>
-        </option>
-      </GradleProjectSettings>
-      <GradleProjectSettings>
-        <option name="testRunner" value="CHOOSE_PER_TEST" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="$USER_HOME$/Git/misc/LibLauncher3" />
+            <option value="$PROJECT_DIR$" />
           </set>
         </option>
       </GradleProjectSettings>
