@@ -3,7 +3,7 @@ package com.android.launcher3.nexus.bottombar.provider;
 import com.android.launcher3.nexus.bottombar.model.SmartspaceTarget;
 
 interface IBottomBarProvider {
-    List<SmartspaceTarget> getTargets();
+    List<SmartspaceTarget> getTargets(String localeString);
     boolean getEnabled();
     void setEnabled(boolean bool);
     String getName(String localeString);
@@ -11,4 +11,5 @@ interface IBottomBarProvider {
     List<SmartspaceTarget> getDisabledTargetsFunction();
     boolean requiresSetup();
     void startSetup();
+    void forceRefresh();
 }
