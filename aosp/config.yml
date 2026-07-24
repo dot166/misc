@@ -5,9 +5,6 @@ additional_projects:
   - path: external/AppStore
     name: platform_external_AppStore
     clone_depth: 1
-  - path: external/FocusLock
-    name: platform_external_FocusLock
-    clone_depth: 1
   - path: external/Music
     name: platform_external_Music
     clone_depth: 1
