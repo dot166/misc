@@ -43,6 +43,7 @@ android {
 
 dependencies {
     api(libs.androidx.appcompat)
+    api(libs.androidx.ui)
 }
 
 mavenPublishing {

@@ -4,9 +4,11 @@ appcompat = "1.7.1"
 kotlin = "2.4.0"
 generateBp = "+"
 maven = "0.37.0"
+ui = "1.11.4"
 
 [libraries]
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 
 [plugins]
 android-library = { id = "com.android.library", version.ref = "agp" }

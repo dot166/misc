@@ -153,7 +153,19 @@ jobs:
           generate_release_notes: true
 
       - name: Build LibLauncher3
-        run: cd LibLauncher3 && chmod +x gradlew && ./gradlew assembleRelease
+        run: cd LibLauncher3 && chmod +x gradlew && ./gradlew assembleRelease && ./gradlew generateBp
+
+      - name: Commit changes
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' }}
+        run: |
+          git add .
+          git commit -m "Update generated files" || true
+
+      - name: Push changes to repo
+        uses: ad-m/github-push-action@master
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' }}
+        with:
+          branch: ${{ github.ref }}
       - name: Check if Release build
         shell: sh
         run: |

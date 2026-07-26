@@ -2,6 +2,7 @@ package com.google.android.gsa.overlay.ui.panel
 
 import android.graphics.Rect
 import android.view.MotionEvent
+import androidx.compose.ui.platform.createLifecycleAwareWindowRecomposer
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -34,11 +35,16 @@ class OverlayControllerSlidingPanelLayout(private val overlayController: Overlay
         setViewTreeLifecycleOwner(this)
         setViewTreeSavedStateRegistryOwner(this)
         setViewTreeViewModelStoreOwner(this)
+
+        val recomposer = this.createLifecycleAwareWindowRecomposer()
+        setTag(androidx.compose.ui.R.id.androidx_compose_ui_view_composition_context, recomposer)
     }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        lifecycleRegistry.currentState = Lifecycle.State.INITIALIZED
         lifecycleRegistry.currentState = Lifecycle.State.CREATED
+        lifecycleRegistry.currentState = Lifecycle.State.STARTED
         lifecycleRegistry.currentState = Lifecycle.State.RESUMED
     }
 
@@ -51,6 +57,7 @@ class OverlayControllerSlidingPanelLayout(private val overlayController: Overlay
     override fun onWindowVisibilityChanged(visibility: Int) {
         super.onWindowVisibilityChanged(visibility)
         if (visibility == VISIBLE) {
+            lifecycleRegistry.currentState = Lifecycle.State.STARTED
             lifecycleRegistry.currentState = Lifecycle.State.RESUMED
         } else {
             lifecycleRegistry.currentState = Lifecycle.State.STARTED
