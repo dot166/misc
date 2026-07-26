@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="unable_to_start_intent_via_launcher3_starting_via_app">Unable to start intent %1$s via Launcher3, starting via %2$s</string>
+</resources>

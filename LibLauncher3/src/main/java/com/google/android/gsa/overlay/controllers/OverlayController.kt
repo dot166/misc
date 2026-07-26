@@ -1,16 +1,19 @@
 package com.google.android.gsa.overlay.controllers
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.annotation.CallSuper
 import com.google.android.gsa.overlay.base.SlidingPanelLayoutDragCallback
 import com.google.android.gsa.overlay.model.ByteBundleHolder
 import com.google.android.gsa.overlay.ui.panel.OverlayControllerStateChanger
 import com.google.android.gsa.overlay.ui.panel.PanelState
 import com.google.android.gsa.overlay.ui.panel.SlidingPanelLayout
+import io.github.dot166.liblauncher3.R
 import java.io.PrintWriter
 
 open class OverlayController(context: Context?, theme: Int, dialogTheme: Int) :
@@ -100,6 +103,33 @@ open class OverlayController(context: Context?, theme: Int, dialogTheme: Int) :
             if(i == 3) {
                 onResume()
             }
+        }
+    }
+    override fun startActivity(intent: Intent) {
+        if (uoa != null) {
+            uoa!!.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), null)
+        } else {
+            Toast.makeText(this,
+                getString(
+                    R.string.unable_to_start_intent_via_launcher3_starting_via_app,
+                    intent.toString(),
+                    packageName
+                ), Toast.LENGTH_LONG).show()
+            super.startActivity(intent)
+        }
+    }
+
+    override fun startActivity(intent: Intent, bundle: Bundle?) {
+        if (uoa != null) {
+            uoa!!.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), bundle)
+        } else {
+            Toast.makeText(this,
+                getString(
+                    R.string.unable_to_start_intent_via_launcher3_starting_via_app,
+                    intent.toString(),
+                    packageName
+                ), Toast.LENGTH_LONG).show()
+            super.startActivity(intent, bundle)
         }
     }
 
