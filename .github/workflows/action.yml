@@ -153,7 +153,7 @@ jobs:
           generate_release_notes: true
 
       - name: Build LibLauncher3
-        run: cd LibLauncher3 && chmod +x gradlew && ./gradlew assembleRelease && ./gradlew generateBp
+        run: cd LibLauncher3 && chmod +x gradlew && ./gradlew assembleRelease && ./gradlew generateBp --no-configuration-cache
 
       - name: Commit changes
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' }}
