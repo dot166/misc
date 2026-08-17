@@ -1,7 +1,7 @@
 [versions]
 agp = "9.2.1"
 compose = "2.4.0"
-jLib = "104.4.3"
+jLib = "104.4.4"
 
 [libraries]
 jLib = { group = "io.github.dot166", name = "j-Lib", version.ref = "jLib" }
