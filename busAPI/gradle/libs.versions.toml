@@ -9,5 +9,5 @@ maven = "0.36.0"
 coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines"}
 
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.4.0" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.4.10" }
 maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven" }
