@@ -10,7 +10,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
 
-    id("com.gradleup.shadow") version "9.2.2"
+    id("com.gradleup.shadow") version "9.6.1"
 
     // Apply the application plugin to add support for building a CLI application in Java.
     application
