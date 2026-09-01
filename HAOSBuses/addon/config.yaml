@@ -1,0 +1,16 @@
+name: Kotlin Bus Service
+version: "1.0.0"
+slug: kotlin_bus
+description: Gets bus departure information from Bustimes
+startup: application
+boot: auto
+init: false
+
+arch:
+  - aarch64
+
+ports:
+  8080/tcp: 8080
+
+options: {}
+schema: {}

@@ -48,3 +48,23 @@ updates:
     directory: "/rsTunes-AOSP/" # Location of package manifests
     schedule:
       interval: "daily"
+
+  - package-ecosystem: "gradle" # See documentation for possible values
+    directory: "/sensitive-pn/libPhone2/" # Location of package manifests
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "gradle" # See documentation for possible values
+    directory: "/LibLauncher3/" # Location of package manifests
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "gradle" # See documentation for possible values
+    directory: "/busAPI/" # Location of package manifests
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "gradle" # See documentation for possible values
+    directory: "/HAOSBuses/" # Location of package manifests
+    schedule:
+      interval: "daily"
