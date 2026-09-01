@@ -22,10 +22,10 @@ repositories {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-server-core-jvm:3.2.3")
-    implementation("io.ktor:ktor-server-netty-jvm:3.2.3")
-    implementation("io.ktor:ktor-server-content-negotiation-jvm:3.2.3")
-    implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:3.2.3")
+    implementation("io.ktor:ktor-server-core-jvm:3.5.2")
+    implementation("io.ktor:ktor-server-netty-jvm:3.5.2")
+    implementation("io.ktor:ktor-server-content-negotiation-jvm:3.5.2")
+    implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:3.5.2")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
     // library goes here when I get it on maven...
