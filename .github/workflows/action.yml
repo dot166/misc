@@ -191,32 +191,33 @@ jobs:
 
       - name: Build BusAPI and HAOSBuses
         run: cd busAPI && chmod +x gradlew && ./gradlew assembleRelease && cd ../HAOSBuses && chmod +x gradlew && ./gradlew assembleRelease
-      - name: Check if Release build
-        shell: sh
-        run: |
-          VERSION=$(cat BusAPI/ver)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          RELEASE=0 && git show-ref --tags --verify --quiet "refs/tags/busAPI-$VERSION" || RELEASE=1
-          echo "RELEASE=$RELEASE" >> $GITHUB_ENV
+# disable publishing as it is not ready yet
+#      - name: Check if Release build
+#        shell: sh
+#        run: |
+#          VERSION=$(cat BusAPI/ver)
+#          echo "VERSION=$VERSION" >> $GITHUB_ENV
+#          RELEASE=0 && git show-ref --tags --verify --quiet "refs/tags/busAPI-$VERSION" || RELEASE=1
+#          echo "RELEASE=$RELEASE" >> $GITHUB_ENV
+#
+#      - name: publish BusAPI
+#        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' && env.RELEASE == '1' }}
+#        run: |
+#          cd busAPI
+#          echo ${{ env.VERSION }}
+#          ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
 
-      - name: publish BusAPI
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' && env.RELEASE == '1' }}
-        run: |
-          cd busAPI
-          echo ${{ env.VERSION }}
-          ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
+#      - name: Push changes to repo
+#        uses: ad-m/github-push-action@master
+#        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' }}
+#        with:
+#          branch: ${{ github.ref }}
 
-      - name: Push changes to repo
-        uses: ad-m/github-push-action@master
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' }}
-        with:
-          branch: ${{ github.ref }}
-
-      - name: Upload to new Release
-        uses: softprops/action-gh-release@v3
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' && env.RELEASE == '1' }}
-        with:
-          tag_name: busAPI-${{ env.VERSION }}
-          make_latest: true
-          generate_release_notes: true
+#      - name: Upload to new Release
+#        uses: softprops/action-gh-release@v3
+#        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' && env.RELEASE == '1' }}
+#        with:
+#          tag_name: busAPI-${{ env.VERSION }}
+#          make_latest: true
+#          generate_release_notes: true
 
