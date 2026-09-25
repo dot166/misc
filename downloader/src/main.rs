@@ -136,14 +136,18 @@ async fn get_cached_json(api_url: &str, client: &reqwest::Client)
     let body = resp.text().await
         .map_err(|e| format!("read body: {}", e))?;
 
-    let _ = fs::write(&path, &body);
+    fs::write(&path, &body)
+        .map_err(|e| format!("cache write: {}", e))?;
     Ok(body)
 }
 
 fn cache_path_for_url(url: &str) -> PathBuf {
-    let name = format!("{}.json", url);
+    let id = url
+        .strip_prefix("https://vocadb.net/api/songs/")
+        .and_then(|s| s.split('?').next())
+        .unwrap_or("unknown");
 
-    PathBuf::from(cache_dir()).join(name)
+    PathBuf::from(cache_dir().join(format!("{}.json", id)))
 }
 
 fn cache_valid(path: &Path) -> bool {
