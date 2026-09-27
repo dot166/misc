@@ -1,18 +1,51 @@
 package com.android.launcher3.nexus.bottombar.model
 
+import android.app.PendingIntent
+import android.content.Intent
+import android.graphics.drawable.Icon
+import android.os.Bundle
 import android.os.Parcelable
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class SmartspaceTarget(
     val id: String,
-    val headerAction: SmartspaceAction? = null,
+    val icon: Icon? = null,
+    val title: CharSequence,
+    val subtitle: CharSequence? = null,
+    val contentDescription: CharSequence? = null,
+    val pendingIntent: PendingIntent? = null,
+    val intent: Intent? = null,
+    @IgnoredOnParcel
+    val onClick: Runnable? = null,
+    val tiles: List<SmartspaceView> = listOf(),
+    val button: SmartspaceButtonView? = null,
     val score: Float = 0f,
     val featureType: FeatureType,
 ) : Parcelable {
 
+    @Deprecated("SmartspaceAction is deprecated")
+    constructor(
+        id: String,
+        headerAction: SmartspaceAction? = null,
+        score: Float = 0f,
+        featureType: FeatureType
+    ) : this(
+        id = id,
+        icon = headerAction?.icon,
+        title = headerAction?.title ?: "",
+        subtitle = headerAction?.subtitle,
+        contentDescription = headerAction?.contentDescription,
+        pendingIntent = headerAction?.pendingIntent,
+        intent = headerAction?.intent,
+        onClick = headerAction?.onClick,
+        score = score,
+        featureType = featureType
+    )
+
     @Parcelize
-    enum class FeatureType : Parcelable{
+    enum class FeatureType : Parcelable {
         FEATURE_UNDEFINED,
         FEATURE_WEATHER,
         FEATURE_CALENDAR,
@@ -56,5 +89,6 @@ data class SmartspaceTarget(
         FEATURE_BLAZE_BUILD_PROGRESS,
         FEATURE_EARTHQUAKE_OCCURRED,
         FEATURE_WORLD_CLOCKS,
+        INTERNAL_FEATURE_DATE_TIME,
     }
 }

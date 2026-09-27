@@ -21,11 +21,14 @@ import kotlinx.coroutines.runBlocking
 @Discouraged("This is a blocking read, use firstCached() for non-blocking reads")
 fun <T> Flow<T>.firstBlocking() = runBlocking { first() }
 
-fun broadcastReceiverFlow(context: Context, filter: IntentFilter) = callbackFlow {
+fun broadcastReceiverFlow(context: Context, filter: IntentFilter, withInitial: Boolean = false) = callbackFlow {
     val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             trySend(intent)
         }
+    }
+    if (withInitial) {
+        trySend(Intent())
     }
     context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
     awaitClose { context.unregisterReceiver(receiver) }

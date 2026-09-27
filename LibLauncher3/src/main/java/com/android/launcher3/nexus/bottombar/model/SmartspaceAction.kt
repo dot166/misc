@@ -8,6 +8,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
+@Deprecated("SmartspaceAction is deprecated")
 @Parcelize
 data class SmartspaceAction(
     val id: String,
@@ -21,5 +22,3 @@ data class SmartspaceAction(
     val onClick: Runnable? = null,
     val extras: Bundle? = null,
 ) : Parcelable
-
-val SmartspaceAction?.hasIntent get() = this != null && (intent != null || pendingIntent != null || onClick != null)
