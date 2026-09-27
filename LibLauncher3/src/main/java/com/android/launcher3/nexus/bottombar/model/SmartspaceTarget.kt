@@ -7,7 +7,6 @@ import kotlinx.parcelize.Parcelize
 data class SmartspaceTarget(
     val id: String,
     val headerAction: SmartspaceAction? = null,
-    val baseAction: SmartspaceAction? = null,
     val score: Float = 0f,
     val featureType: FeatureType,
 ) : Parcelable {
