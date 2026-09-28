@@ -190,7 +190,7 @@ jobs:
           generate_release_notes: true
 
       - name: Build BusAPI and HAOSBuses
-        run: cd busAPI && chmod +x gradlew && ./gradlew assembleRelease && cd ../HAOSBuses && chmod +x gradlew && ./gradlew assembleRelease
+        run: cd busAPI && chmod +x gradlew && ./gradlew build && cd ../HAOSBuses && chmod +x gradlew && ./gradlew build
 # disable publishing as it is not ready yet
 #      - name: Check if Release build
 #        shell: sh
