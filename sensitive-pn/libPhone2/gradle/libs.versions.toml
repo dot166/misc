@@ -4,7 +4,7 @@
 [versions]
 aconfig = "1.3.2"
 agp = "9.2.0"
-annotation = "1.10.0"
+annotation = "1.11.0"
 libphonenumber = "9.0.40"
 maven = "0.37.0"
 
