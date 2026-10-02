@@ -27,7 +27,7 @@ class SensitivePN {
             }
             if (xmlPullParser.eventType == 2) {
                 if (xmlPullParser.name == "item") {
-                    item!!.add(Item().read(xmlPullParser))
+                    item!!.add(ItemParser.read(xmlPullParser))
                 } else {
                     XmlParser.skip(xmlPullParser)
                 }

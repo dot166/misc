@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.maven.publish)
-    alias(libs.plugins.aconfig)
+    alias(libs.plugins.kotlin.parcelize)
 }
 
 group = "io.github.dot166"
@@ -10,19 +10,17 @@ version = providers.exec {
 }.standardOutput.asText.get().trim()
 
 android {
-    namespace = "io.github.dot166.libphone2"
-    compileSdk = 36
+    namespace = "io.github.dot166.libphone2.lib"
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 0
+        }
+    }
 
     defaultConfig {
         minSdk = 31
 
         consumerProguardFiles("consumer-rules.pro")
-    }
-
-    sourceSets {
-        named("main") {
-            kotlin.directories.add("compat/src/main/kotlin")
-        }
     }
 
     buildTypes {
@@ -41,13 +39,7 @@ android {
 }
 
 dependencies {
-    api(libs.libphonenumber)
     api(libs.annotation)
-}
-
-aconfig {
-    aconfigFiles = mutableListOf("aconfig/libphone2.aconfig")
-    isAOSP = false
 }
 
 mavenPublishing {

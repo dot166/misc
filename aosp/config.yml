@@ -8,6 +8,9 @@ additional_projects:
   - path: external/NightStand
     name: platform_external_NightStand
     clone_depth: 1
+  - path: external/LibPhone2
+    name: platform_external_LibPhone2
+    clone_depth: 1
   - path: j-lib 
     name: jOS_j-lib
     revision: main
@@ -40,6 +43,7 @@ forked_repos:
       - platform_packages_apps_Settings
       - platform_packages_apps_SetupWizard2
       - platform_packages_apps_Updater
+      - platform_packages_services_Telecomm
 removed_repos:
   - platform_external_AppStore
   - platform_external_Auditor

@@ -103,9 +103,63 @@ jobs:
 
       - name: Update Helpline List
         run: |
-          cd sensitive-pn/etc
-          curl -O https://raw.githubusercontent.com/LineageOS/android_vendor_lineage/refs/heads/lineage-23.2/prebuilt/common/etc/sensitive_pn.xml
-          cd ../../..
+          cd sensitive-pn/libPhone2/app/src/main/assets/
+          curl -O https://raw.githubusercontent.com/LineageOS/android_vendor_lineage/refs/heads/lineage-24.0/prebuilt/common/etc/sensitive_pn.xml
+          cd ../../../../../..
+
+      - name: Build LibPhone2 Database
+        run: cd sensitive-pn/libPhone2 && chmod +x gradlew && ./gradlew assembleRelease
+      - name: Check if Release build
+        shell: sh
+        run: |
+          cd sensitive-pn/libPhone2
+          VERSION=$(jq '.elements[0].versionCode' app/build/outputs/apk/release/output-metadata.json)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          RELEASE=0 && git diff --quiet app ver || RELEASE=1
+          echo "RELEASE=$RELEASE" >> $GITHUB_ENV
+      - name: send to repo and prebuilt
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' && env.RELEASE == '1' }}
+        run: |
+          cd sensitive-pn/libPhone2
+          echo "${{ secrets.KEYSTORE }}" > a.txt
+          base64 -d a.txt > key.jks
+          echo "${{ secrets.KEYSTORE_PROPS }}" > b.txt
+          base64 -d b.txt > keystore.properties
+          ./gradlew assembleRelease # rebuild so it is actually signed
+          echo ${{ env.VERSION }}
+          mkdir -p artifacts/apps/packages/io.github.dot166.libphone2/${{ env.VERSION }}
+          echo "channel = \"stable"\" > artifacts/apps/packages/io.github.dot166.libphone2/${{ env.VERSION }}/channel.toml
+          cp app/build/outputs/apk/release/app-release.apk artifacts/apps/packages/io.github.dot166.libphone2/${{ env.VERSION }}/base.apk
+          cp app/build/outputs/apk/release/app-release.apk.idsig artifacts/apps/packages/io.github.dot166.libphone2/${{ env.VERSION }}/base.apk.idsig
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/dot166/apks.git apks
+          cp -r artifacts/* apks/
+          cd apks
+          git add .
+          git commit -m "LibPhone2 Database ${{ env.VERSION }}"
+          git push origin
+          cd ..
+          rm -rf artifacts
+          rm -rf apks
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/dot166/platform_external_LibPhone2.git prebuilt
+          cp app/build/outputs/apk/release/app-release.apk prebuilt/prebuilt/
+          cp app/build/outputs/apk/release/app-release.apk.idsig prebuilt/prebuilt/
+          cd prebuilt
+          git add .
+          git commit -m "LibPhone2 Database ${{ env.VERSION }}"
+          git push origin
+          cd ..
+          rm -rf prebuilt
+          rm -rf a.txt
+          rm -rf b.txt
+          rm -rf key.jks
+          rm -rf keystore.properties
+      - name: Upload to new Release
+        uses: softprops/action-gh-release@v3
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' && env.RELEASE == '1' }}
+        with:
+          tag_name: libphone2-db-${{ env.VERSION }}
+          make_latest: true
+          generate_release_notes: true
 
       - name: Commit changes
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' }}
