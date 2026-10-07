@@ -12,6 +12,7 @@ android_library {
         "androidx.compose.ui_ui-text",
         "androidx.compose.ui_ui-unit",
         "androidx.compose.ui_ui-util",
+        "androidx.core_core-ktx",
         "androidx.lifecycle_lifecycle-runtime",
         "androidx.lifecycle_lifecycle-runtime-compose",
         "androidx.lifecycle_lifecycle-runtime-ktx",
