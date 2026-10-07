@@ -2,7 +2,6 @@ android_library {
     name: "LibLauncher3",
     static_libs: [
         // DO NOT EDIT THIS SECTION MANUALLY
-        "androidx.appcompat_appcompat",
         "androidx.compose.runtime_runtime",
         "androidx.compose.runtime_runtime-annotation",
         "androidx.compose.runtime_runtime-retain",
@@ -16,6 +15,7 @@ android_library {
         "androidx.lifecycle_lifecycle-runtime",
         "androidx.lifecycle_lifecycle-runtime-compose",
         "androidx.lifecycle_lifecycle-runtime-ktx",
+        "androidx.lifecycle_lifecycle-viewmodel",
         "androidx.lifecycle_lifecycle-viewmodel-savedstate",
         "androidx.savedstate_savedstate",
         "androidx.savedstate_savedstate-compose",

@@ -42,8 +42,9 @@ android {
 }
 
 dependencies {
-    api(libs.androidx.appcompat)
     api(libs.androidx.ui)
+    api(libs.androidx.core.ktx)
+    api(libs.androidx.lifecycle.viewmodel.android)
 }
 
 mavenPublishing {

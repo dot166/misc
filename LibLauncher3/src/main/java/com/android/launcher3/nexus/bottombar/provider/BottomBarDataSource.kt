@@ -3,12 +3,8 @@ package com.android.launcher3.nexus.bottombar.provider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
-import android.content.res.Resources
-import android.util.Log
 import com.android.launcher3.nexus.bottombar.model.SmartspaceTarget
 import java.util.Locale
-import androidx.core.content.edit
 import com.android.launcher3.nexus.bottombar.LocaleUtils
 import com.android.launcher3.nexus.bottombar.util.getLocalizedResources
 import kotlinx.coroutines.CoroutineScope
@@ -49,7 +45,7 @@ abstract class BottomBarDataSource(
         return currentTargets
     }
     final override fun getEnabled() = sharedPreferences.getBoolean(enabledPreferenceKey, isAvailable)
-    final override fun setEnabled(bool: Boolean) = sharedPreferences.edit { putBoolean(enabledPreferenceKey, bool) }
+    final override fun setEnabled(bool: Boolean) = sharedPreferences.edit().putBoolean(enabledPreferenceKey, bool).apply()
     final override fun getName(localeString: String): String {
         locale = LocaleUtils.toLocale(localeString)
         return getLocalizedResources(locale, context).getString(providerName)

@@ -3,7 +3,6 @@ package com.android.launcher3.nexus.bottombar.model
 import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.drawable.Icon
-import android.os.Bundle
 import android.os.Parcelable
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
@@ -24,25 +23,6 @@ data class SmartspaceTarget(
     val score: Float = 0f,
     val featureType: FeatureType,
 ) : Parcelable {
-
-    @Deprecated("SmartspaceAction is deprecated")
-    constructor(
-        id: String,
-        headerAction: SmartspaceAction? = null,
-        score: Float = 0f,
-        featureType: FeatureType
-    ) : this(
-        id = id,
-        icon = headerAction?.icon,
-        title = headerAction?.title ?: "",
-        subtitle = headerAction?.subtitle,
-        contentDescription = headerAction?.contentDescription,
-        pendingIntent = headerAction?.pendingIntent,
-        intent = headerAction?.intent,
-        onClick = headerAction?.onClick,
-        score = score,
-        featureType = featureType
-    )
 
     @Parcelize
     enum class FeatureType : Parcelable {
