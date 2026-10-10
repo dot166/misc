@@ -190,13 +190,13 @@ jobs:
           echo ${{ env.VERSION }}
           ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
 
-      - name: add AOSP prebuilt
+      - name: generateBp
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'dot166/misc' }}
         run: |
           cd sensitive-pn/libPhone2
-          cp lib/build/outputs/aar/lib-release.aar lib/libPhone2.aar
+          ./gradlew generateBp --no-configuration-cache
           git add .
-          git commit -m "Update libPhone2" || true
+          git commit -m "Update generated files" || true
 
       - name: Push changes to repo
         uses: ad-m/github-push-action@master

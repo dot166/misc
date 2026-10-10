@@ -1,7 +1,11 @@
+import org.lineageos.generatebp.GenerateBpPluginExtension
+import org.lineageos.generatebp.models.Module
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.maven.publish)
     alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.lineageos.generatebp)
 }
 
 group = "io.github.dot166"
@@ -67,6 +71,24 @@ mavenPublishing {
             url = "https://github.com/dot166/misc"
             connection = "scm:git:git://github.com/dot166/misc.git"
             developerConnection = "scm:git:ssh://git@github.com/dot166/misc.git"
+        }
+    }
+}
+
+configure<GenerateBpPluginExtension> {
+    targetSdk.set(android.compileSdk!!)
+    minSdk.set(android.defaultConfig.minSdk!!)
+    versionCode.set(android.compileSdk!!)
+    versionName.set(android.compileSdk!!.toString())
+    availableInAOSP.set { module: Module ->
+        when {
+            module.name == "accompanist-drawablepainter" -> false
+            module.group.startsWith("androidx.media3") -> false
+            module.group.startsWith("androidx") -> true
+            module.group.startsWith("org.jetbrains") -> true
+            module.group.startsWith("io.github.dot166") -> true
+            module.group.startsWith("com.google") -> true
+            else -> false
         }
     }
 }
