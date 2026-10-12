@@ -968,7 +968,7 @@ fn main() -> Result<()> {
     }
 
     for repo in independent {
-        if repo == "misc" || repo == "jOS_j-lib" {
+        if repo == "misc" || repo == "jOS_j-lib" || repo == "jetpref" {
             println!(">>> Skipping {}", repo);
             continue
         }

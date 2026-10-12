@@ -14,6 +14,9 @@ additional_projects:
   - path: j-lib 
     name: jOS_j-lib
     revision: main
+  - path: external/jetpref
+    name: jetpref
+    revision: main
   - path: misc
     name: misc
     revision: main
