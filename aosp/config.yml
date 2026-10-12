@@ -35,6 +35,7 @@ additional_non_manifest_repos:
 forked_repos:
   jos:
     aosp:
+      - platform/external/kotlinpoet
       - platform/external/ksp
     graphene:
       - platform_build
