@@ -67,7 +67,7 @@ object ItemParser {
             if (number == null) {
                 throw XmlPullParserException("Item has no number, invalid")
             }
-            return Item(categories, languages, name, number, organization, website)
+            return Item(number, name, categories, languages, organization, website)
         }
         throw DatatypeConfigurationException("Item is not closed")
     }

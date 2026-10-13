@@ -37,7 +37,6 @@ forked_repos:
     aosp:
       - platform/external/kotlinpoet
       - platform/external/ksp
-      - platform/packages/modules/Telephony
     graphene:
       - platform_build
       - platform_build_release
@@ -49,6 +48,7 @@ forked_repos:
       - platform_packages_apps_Settings
       - platform_packages_apps_SetupWizard2
       - platform_packages_apps_Updater
+      - platform_packages_modules_Telephony
       - platform_packages_services_Telecomm
 removed_repos:
   - platform_external_AppStore
