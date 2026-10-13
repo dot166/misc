@@ -6,7 +6,7 @@ agp = "9.2.1"
 annotation = "1.11.0"
 libphonenumber = "9.0.40"
 maven = "0.37.0"
-kotlin = "2.4.20"
+kotlin = "2.4.21"
 generateBp = "+"
 
 [libraries]
