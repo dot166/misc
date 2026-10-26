@@ -421,6 +421,8 @@ fn get_album_art(id: i32, url: String) -> String {
         "https://static.vocadb.net/img/Album/mainOrig/79.jpg?v=27".to_string()
     } else if id == 1032 {
         "https://nicovideo.cdn.nimg.jp/thumbnails/6666016/6666016".to_string() // vocadb has a broken thumbnail for ロミオとシンデレラ, so provide our own
+    } else if id == 299484 {
+        "https://nicovideo.cdn.nimg.jp/thumbnails/37716686/37716686.44435585".to_string() // vocadb has a broken thumbnail for ジャックポットサッドガール, so provide our own
     } else {
         url
     }
