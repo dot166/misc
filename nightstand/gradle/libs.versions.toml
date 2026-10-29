@@ -1,5 +1,5 @@
 [versions]
-agp = "9.4.1"
+agp = "9.5.0"
 compose = "2.4.20"
 jLib = "104.4.3"
 
