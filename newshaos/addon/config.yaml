@@ -1,0 +1,16 @@
+name: Rust News Service
+version: "1.0.1"
+slug: rust_news
+description: Gets the news from NHK World English
+startup: application
+boot: auto
+init: false
+
+arch:
+  - aarch64
+
+ports:
+  8088/tcp: 8088
+
+options: {}
+schema: {}
