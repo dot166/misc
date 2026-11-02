@@ -26,9 +26,8 @@ dependencies {
     implementation("io.ktor:ktor-server-netty-jvm:3.6.0")
     implementation("io.ktor:ktor-server-content-negotiation-jvm:3.6.0")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:3.6.0")
-
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
-    // library goes here when I get it on maven...
+    implementation("io.github.dot166:busAPI:1")
 }
 
 
