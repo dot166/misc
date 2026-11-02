@@ -255,7 +255,7 @@ jobs:
       - name: Check if Release build
         shell: sh
         run: |
-          VERSION=$(cat BusAPI/ver)
+          VERSION=$(cat busAPI/ver)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           RELEASE=0 && git show-ref --tags --verify --quiet "refs/tags/busAPI-$VERSION" || RELEASE=1
           echo "RELEASE=$RELEASE" >> $GITHUB_ENV
