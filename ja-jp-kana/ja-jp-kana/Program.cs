@@ -105,7 +105,7 @@ void guessLoopRoumaji(Kana kana)
     else
     {
         Console.WriteLine($"Incorrect, {kana.kana} is {kana.roumaji.ToLower()}, not {guess.ToLower()}");
-        Console.WriteLine("Press any key to continue...");
+        Console.WriteLine("Press any key to exit...");
         Console.ReadKey();
         Console.Clear();
         Environment.Exit(0);
