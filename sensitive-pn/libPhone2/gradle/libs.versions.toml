@@ -4,7 +4,7 @@
 [versions]
 agp = "9.5.1"
 annotation = "1.11.0"
-libphonenumber = "9.0.42"
+libphonenumber = "9.0.43"
 maven = "0.37.0"
 generateBp = "+"
 
