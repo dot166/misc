@@ -8,10 +8,10 @@
       android:icon="@mipmap/ic_launcher"
       android:label="@string/app_name"
       android:supportsRtl="true"
-      android:theme="@style/Theme.Material3Expressive.DayNight.NoActionBar"
+      android:theme="@style/Theme.DeviceDefault.DayNight.NoActionBar"
       tools:replace="android:name">
     <activity
-        android:name="io.github.dot166.jlib.app.PreferenceMainActivity"
+        android:name=".PreferenceActivity"
         android:exported="true"
         android:excludeFromRecents="true"
         android:label="@string/screensaver_settings"

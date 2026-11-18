@@ -12,8 +12,8 @@ import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.TextClock
 
-
 class NightStand : DreamService() {
+// TODO: Rewrite in compose
     private val mStartPositionUpdater: ViewTreeObserver.OnPreDrawListener = StartPositionUpdater()
     private var mPositionUpdater: MoveScreensaverRunnable? = null
 
@@ -41,7 +41,7 @@ class NightStand : DreamService() {
     override fun onCreate() {
         Log.i("NightStand", "NightStand created")
 
-        setTheme(com.google.android.material.R.style.Theme_Material3Expressive_DayNight_NoActionBar)
+        setTheme(io.github.dot166.jlib.R.style.Theme_DeviceDefault_DayNight_NoActionBar)
         super.onCreate()
 
         mDateFormat = getString(R.string.abbrev_wday_month_day_no_year)

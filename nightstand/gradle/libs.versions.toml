@@ -1,12 +1,20 @@
 [versions]
-agp = "9.5.1"
+agp = "9.4.1"
 compose = "2.4.21"
-jLib = "104.4.3"
+jLib = "105.0.0"
+ksp = "2.3.11"
+patrickgold-jetpref = "0.5.0-beta01"
+recyclerview = "1.4.0"
+constraintlayout = "2.2.2"
 
 [libraries]
 jLib = { group = "io.github.dot166", name = "j-Lib", version.ref = "jLib" }
+patrickgold-jetpref-datastore-model-processor = { module = "dev.patrickgold.jetpref:jetpref-datastore-model-processor", version.ref = "patrickgold-jetpref" }
+recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
+constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "compose" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 

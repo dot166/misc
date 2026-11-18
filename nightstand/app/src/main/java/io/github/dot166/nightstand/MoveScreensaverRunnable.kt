@@ -28,7 +28,6 @@ import io.github.dot166.nightstand.Utils.enforceMainLooper
 import io.github.dot166.nightstand.Utils.getAlphaAnimator
 import io.github.dot166.nightstand.Utils.getScaleAnimator
 import io.github.dot166.nightstand.Utils.removePeriodicCallback
-import io.github.dot166.nightstand.Utils.screensaverNightModeOn
 import kotlin.math.min
 
 /**
@@ -62,6 +61,7 @@ class MoveScreensaverRunnable(
     private var currentController: MediaController? = null
     var mIsPlaying = false
     lateinit var mAdapter: EventAdapter
+    val prefs by nightStandPreferenceStore
 
     /**
      * Start or restart the random movement of the saver view within the content view.
@@ -123,6 +123,20 @@ class MoveScreensaverRunnable(
 
         // Schedule callbacks every minute to adjust the position of mSaverView.
         addMinuteCallback(this, -FADE_TIME)
+    }
+
+    // tmp function for interop
+    fun ComposeView.setContentCompat(content: @Composable () -> Unit) {
+        // Set composition strategy
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+
+        // Inject dependencies normally added by appcompat activities
+        setViewTreeLifecycleOwner(stand)
+        setViewTreeViewModelStoreOwner(stand)
+        setViewTreeSavedStateRegistryOwner(stand)
+
+        // Set content composable
+        setContent(content)
     }
 
     private fun handleControllersChanged(controllers: List<MediaController>?) {
@@ -256,7 +270,7 @@ class MoveScreensaverRunnable(
             mActiveAnimator!!.addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationStart(animation: Animator) {
                     // Re-dim the display in case DnD has been enabled and we're following it.
-                    dimClockView(screensaverNightModeOn, mSaverView)
+                    dimClockView(prefs.nightMode.screensaverNightMode.get(), mSaverView)
                 }
             })
         } else {
@@ -286,7 +300,7 @@ class MoveScreensaverRunnable(
                     mSaverView.x = newX
                     mSaverView.y = newY
                     // Re-dim the display in case DnD has been enabled and we're following it.
-                    dimClockView(screensaverNightModeOn, mSaverView)
+                    dimClockView(prefs.nightMode.screensaverNightMode.get(), mSaverView)
                 }
             })
 

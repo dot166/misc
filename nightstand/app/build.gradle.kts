@@ -11,6 +11,7 @@ if (useKeystoreProperties) {
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -28,7 +29,7 @@ android {
     namespace = "io.github.dot166.nightstand"
     compileSdk {
         version = release(37) {
-            minorApiLevel = 0
+            minorApiLevel = 1
         }
     }
 
@@ -36,7 +37,7 @@ android {
         applicationId = "io.github.dot166.nightstand"
         minSdk = 31
         targetSdk = 37
-        versionCode = 4
+        versionCode = 5
         versionName = versionCode.toString()
     }
 
@@ -65,5 +66,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.constraintlayout) // tmp until compose rewrite is done
     implementation(libs.jLib)
+    implementation(libs.recyclerview) // tmp until compose rewrite is done
+    ksp(libs.patrickgold.jetpref.datastore.model.processor)
 }
