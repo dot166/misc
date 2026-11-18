@@ -68,6 +68,5 @@ android {
 dependencies {
     implementation(libs.constraintlayout) // tmp until compose rewrite is done
     implementation(libs.jLib)
-    implementation(libs.recyclerview) // tmp until compose rewrite is done
     ksp(libs.patrickgold.jetpref.datastore.model.processor)
 }
