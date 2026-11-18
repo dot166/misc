@@ -62,13 +62,12 @@ jobs:
           base64 -d b.txt > keystore.properties
           ./gradlew assembleRelease # rebuild so it is actually signed
           echo ${{ env.VERSION }}
-          mkdir -p artifacts/apps/packages/io.github.dot166.nightstand/${{ env.VERSION }}
-          echo "channel = \"stable"\" > artifacts/apps/packages/io.github.dot166.nightstand/${{ env.VERSION }}/channel.toml
-          cp app/build/outputs/apk/release/app-release.apk artifacts/apps/packages/io.github.dot166.nightstand/${{ env.VERSION }}/base.apk
-          cp app/build/outputs/apk/release/app-release.apk.idsig artifacts/apps/packages/io.github.dot166.nightstand/${{ env.VERSION }}/base.apk.idsig
+          mkdir -p artifacts
+          cp app/build/outputs/apk/release/app-release.apk artifacts/base.apk
+          cp app/build/outputs/apk/release/app-release.apk.idsig artifacts/base.apk.idsig
           git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/dot166/apks.git apks
-          cp -r artifacts/* apks/
           cd apks
+          ./import-apks.py ../artifacts
           git add .
           git commit -m "NightStand ${{ env.VERSION }}"
           git push origin
@@ -133,13 +132,12 @@ jobs:
           base64 -d b.txt > keystore.properties
           ./gradlew assembleRelease # rebuild so it is actually signed
           echo ${{ env.VERSION }}
-          mkdir -p artifacts/apps/packages/io.github.dot166.libphone2/${{ env.VERSION }}
-          echo "channel = \"stable"\" > artifacts/apps/packages/io.github.dot166.libphone2/${{ env.VERSION }}/channel.toml
-          cp app/build/outputs/apk/release/app-release.apk artifacts/apps/packages/io.github.dot166.libphone2/${{ env.VERSION }}/base.apk
-          cp app/build/outputs/apk/release/app-release.apk.idsig artifacts/apps/packages/io.github.dot166.libphone2/${{ env.VERSION }}/base.apk.idsig
+          mkdir -p artifacts
+          cp app/build/outputs/apk/release/app-release.apk artifacts/base.apk
+          cp app/build/outputs/apk/release/app-release.apk.idsig artifacts/base.apk.idsig
           git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/dot166/apks.git apks
-          cp -r artifacts/* apks/
           cd apks
+          ./import-apks.py ../artifacts
           git add .
           git commit -m "LibPhone2 Database ${{ env.VERSION }}"
           git push origin
