@@ -18,10 +18,20 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.Interpolator
 import android.widget.TextView
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.stringResource
 import androidx.core.graphics.drawable.DrawableCompat
-import androidx.recyclerview.widget.DefaultItemAnimator
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import io.github.dot166.jlib.compose.JLibAppTheme
 import io.github.dot166.nightstand.Utils.addMinuteCallback
 import io.github.dot166.nightstand.Utils.dimClockView
 import io.github.dot166.nightstand.Utils.enforceMainLooper
@@ -40,10 +50,10 @@ class MoveScreensaverRunnable(
     /** The container that houses [.mSaverView].  */
     private val mContentView: View,
     /** The display within the [.mContentView] that is randomly positioned.  */
-    private val mSaverView: View
+    private val mSaverView: View,
+    private val stand: NightStand
 ) : Runnable {
     private val mMusicView: View = mSaverView.findViewById(R.id.music_holder)
-    private val mRecycler = mSaverView.findViewById<RecyclerView>(R.id.calendar_events)
 
     /** Accelerate the hide animation.  */
     private val mAcceleration: Interpolator = AccelerateInterpolator()
@@ -60,7 +70,6 @@ class MoveScreensaverRunnable(
 
     private var currentController: MediaController? = null
     var mIsPlaying = false
-    lateinit var mAdapter: EventAdapter
     val prefs by nightStandPreferenceStore
 
     /**
@@ -85,13 +94,19 @@ class MoveScreensaverRunnable(
         mSaverView.setAlpha(0f)
 
         mCalendarModel.startPolling()
-
-        mRecycler.setLayoutManager(LinearLayoutManager(mRecycler.context))
-        mRecycler.setItemAnimator(DefaultItemAnimator())
-        mRecycler.setHasFixedSize(false)
-        mAdapter = EventAdapter(mCalendarModel.events)
-        mRecycler.setAdapter(mAdapter)
-        mAdapter.notifyDataSetChanged()
+        mSaverView.findViewById<ComposeView>(R.id.calendar_events).setContentCompat {
+            val events by mCalendarModel.events.collectAsState()
+            JLibAppTheme {
+                if (events.isEmpty()) {
+                    Text(stringResource((R.string.no_events_found_in_android_system)))
+                }
+                LazyColumn {
+                    items(events) {
+                        Text(it.toString())
+                    }
+                }
+            }
+        }
 
         val mediaSessionManager =
             mContentView.context.getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
@@ -241,9 +256,6 @@ class MoveScreensaverRunnable(
     @SuppressLint("NotifyDataSetChanged")
     override fun run() {
         enforceMainLooper()
-        mAdapter = EventAdapter(mCalendarModel.events)
-        mRecycler.setAdapter(mAdapter)
-        mAdapter.notifyDataSetChanged()
         if (mIsPlaying) {
             mMusicView.visibility = View.VISIBLE
         } else {
