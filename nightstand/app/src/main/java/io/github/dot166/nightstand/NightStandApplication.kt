@@ -1,11 +1,10 @@
 package io.github.dot166.nightstand
 
-import io.github.dot166.jlib.app.RestorableSettingsApplication
+import io.github.dot166.jlib.app.CoreApplication
 
-class NightStandApplication: RestorableSettingsApplication() {
+class NightStandApplication: CoreApplication() {
     override fun onCreate() {
         super.onCreate()
         Utils.init(this)
-        setSpaEnvironment(NightStandSpaEnvironment(this))
     }
 }

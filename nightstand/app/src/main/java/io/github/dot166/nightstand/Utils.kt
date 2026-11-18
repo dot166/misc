@@ -23,13 +23,15 @@ import android.view.View
 import android.widget.TextClock
 import android.widget.TextView
 import androidx.core.graphics.toColorInt
-import io.github.dot166.jlib.app.DefaultSharedPrefsManager
+import dev.patrickgold.jetpref.datastore.runtime.initAndroid
+import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
 object Utils {
+    val prefs by nightStandPreferenceStore
     @JvmStatic
     fun enforceMainLooper() {
         if (Looper.getMainLooper() != Looper.myLooper()) {
@@ -60,7 +62,7 @@ object Utils {
     fun getClockColorFilter(dim: Boolean, clockView: View): String {
         var dim = dim
         val nightModeDND: Boolean =
-            screensaverNightModeDndOn
+            prefs.nightMode.screensaverNightModeDnd.get()
 
         if (nightModeDND) {
             val mNotificationManager = clockView.context
@@ -76,12 +78,12 @@ object Utils {
         }
 
         val brightnessPercentage: Int =
-            screensaverNightModeBrightness
-        var colorFilter: String = screensaverClockColor
+            prefs.nightMode.screensaverNightModeBrightness.get()
+        var colorFilter: String = prefs.clock.screensaverClockColor.get().value
         if (dim) {
             // The alpha channel should range from 16 (10 hex) to 192 (C0 hex).
             val alpha = String.format("%02X", 16 + (176 * brightnessPercentage / 100))
-            colorFilter = screensaverClockNightModeColor
+            colorFilter = prefs.nightMode.screensaverClockNightModeColor.get().value
             colorFilter = "#$alpha$colorFilter"
         } else {
             colorFilter = "#C0$colorFilter"
@@ -159,8 +161,8 @@ object Utils {
      */
     fun setScreensaverTimeFormat(clock: TextClock?, includeSeconds: Boolean) {
         if (clock != null) {
-            val boldText: Boolean = screensaverBoldTextOn
-            val showAmPm: Boolean = screensaverShowAmPmOn
+            val boldText: Boolean = prefs.clock.screensaverBoldText.get()
+            val showAmPm: Boolean = prefs.clock.screensaverShowAmPm.get()
             // Get the best format for 12 hours mode according to the locale
             val pattern = get12ModeFormat(
                 0.4f,  /* amPmRatio */includeSeconds, boldText,
@@ -234,8 +236,6 @@ object Utils {
     /** The model from which timed callbacks originate.  */
     private var mPeriodicCallbackModel: PeriodicCallbackModel? = null
 
-    private var mPrefs: Settings? = null
-
     /**
      * To display the alarm clock in this font, use the character [R.string.clock_emoji].
      *
@@ -247,10 +247,9 @@ object Utils {
 
     fun init(ctx: Context) {
         val dp = ctx.createDeviceProtectedStorageContext()
-        mPrefs = Settings(
-            DefaultSharedPrefsManager.getSharedPreferencesStorage(dp),
-            "FFC0CB"
-        )
+        runBlocking {
+            nightStandPreferenceStore.initAndroid(dp, NightStandPreferenceModel.NAME) // this sometimes is not done initializing before the screensaver loads, causing a race condition
+        }
         mPeriodicCallbackModel = PeriodicCallbackModel(dp)
     }
 
@@ -280,35 +279,6 @@ object Utils {
         enforceMainLooper()
         mPeriodicCallbackModel!!.removePeriodicCallback(runnable)
     }
-
-    var screensaverClockColor: String
-        get() = mPrefs!!.getScreensaverClockColor()
-        set(value) = mPrefs!!.setScreensaverClockColor(value)
-
-    var screensaverClockNightModeColor: String
-        get() = mPrefs!!.getClockNightModeColor()
-        set(value) = mPrefs!!.setClockNightModeColor(value)
-
-    var screensaverNightModeDndOn: Boolean
-        get() = mPrefs!!.getScreensaverNightModeDndOn()
-        set(value) = mPrefs!!.setScreensaverNightModeDndOn(value)
-
-    var screensaverNightModeBrightness: Int
-        get() = mPrefs!!.getScreensaverNightModeBrightness()
-        set(value) = mPrefs!!.setScreensaverNightModeBrightness(value)
-
-    @JvmStatic
-    var screensaverNightModeOn: Boolean
-        get() = mPrefs!!.getScreensaverNightModeOn()
-        set(value) = mPrefs!!.setScreensaverNightModeOn(value)
-
-    var screensaverShowAmPmOn: Boolean
-        get() = mPrefs!!.getScreensaverShowAmPmOn()
-        set(value) = mPrefs!!.setScreensaverShowAmPmOn(value)
-
-    var screensaverBoldTextOn: Boolean
-        get() = mPrefs!!.getScreensaverBoldTextOn()
-        set(value) = mPrefs!!.setScreensaverBoldTextOn(value)
 
     @JvmStatic
     fun getScaleAnimator(view: View?, vararg values: Float): ValueAnimator {

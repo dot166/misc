@@ -39,7 +39,7 @@ class CalendarModel(val ctx: Context) {
 
             val currentLocale: Locale = ConfigurationCompat.getLocales(ctx.resources.configuration)[0]!!
             val fmt = SimpleDateFormat(DateFormat.getBestDateTimePattern(currentLocale, "HH:mm:ss dd-MM-yyyy"), currentLocale)
-            val durationStr: String = if (allDay) {
+            val durationStr: String = if (allDay && cal.get(Calendar.DAY_OF_YEAR)+1 == endCal.get(Calendar.DAY_OF_YEAR) && (cal.get(Calendar.YEAR) == endCal.get(Calendar.YEAR) || cal.get(Calendar.YEAR)+1 == endCal.get(Calendar.YEAR))) {
                 ctx.getString(R.string.all_day)
             } else {
                 ctx.getString(R.string.until, fmt.format(endCal.time))
