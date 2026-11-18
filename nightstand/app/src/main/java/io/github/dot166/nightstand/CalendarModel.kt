@@ -9,6 +9,9 @@ import android.provider.CalendarContract
 import android.text.format.DateFormat
 import android.text.format.DateUtils
 import androidx.core.os.ConfigurationCompat
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -16,13 +19,14 @@ import kotlin.math.min
 
 class CalendarModel(val ctx: Context) {
 
-    var events: List<Event> = listOf()
+    var _events: MutableStateFlow<List<Event>> = MutableStateFlow(listOf())
+    var events: StateFlow<List<Event>> = _events.asStateFlow()
 
     private val mHandler: Handler = Handler(Looper.getMainLooper())
 
     private val mCalendarPoll: Runnable = object : Runnable {
         override fun run() {
-            events = fetch()
+            _events.value = fetch()
             mHandler.postDelayed(this, 15 * 60 * 1000L)
         }
     }

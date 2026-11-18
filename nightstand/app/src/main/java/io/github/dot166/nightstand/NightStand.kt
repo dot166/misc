@@ -6,14 +6,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
-import android.service.dreams.DreamService
 import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.TextClock
 
-class NightStand : DreamService() {
 // TODO: Rewrite in compose
+class NightStand : DreamServiceCompat() {
     private val mStartPositionUpdater: ViewTreeObserver.OnPreDrawListener = StartPositionUpdater()
     private var mPositionUpdater: MoveScreensaverRunnable? = null
 
@@ -62,7 +61,7 @@ class NightStand : DreamService() {
         Utils.setClockIconTypeface(mContentView)
         Utils.setScreensaverTimeFormat(mDigitalClock, true)
 
-        mPositionUpdater = MoveScreensaverRunnable(mContentView!!, mMainClockView!!)
+        mPositionUpdater = MoveScreensaverRunnable(mContentView!!, mMainClockView!!, this)
 
         // We want the screen saver to exit upon user interaction.
         isInteractive = false
