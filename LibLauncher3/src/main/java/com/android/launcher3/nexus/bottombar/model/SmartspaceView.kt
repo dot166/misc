@@ -20,6 +20,9 @@ interface SmartspaceButtonView: SmartspaceView {
 data class SmartspaceIconView(val icon: Icon, val contentDescription: String) : SmartspaceView
 
 @Parcelize
+data class SmartspaceIconTextView(val icon: Icon, val text: String, val contentDescription: String = text) : SmartspaceView
+
+@Parcelize
 data class SmartspaceTextView(val text: String, val contentDescription: String = text) : SmartspaceView
 
 @Parcelize
