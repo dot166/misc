@@ -15,17 +15,21 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon as ComposeIcon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.toColorInt
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
@@ -39,6 +43,7 @@ import io.github.dot166.nightstand.Utils.getAlphaAnimator
 import io.github.dot166.nightstand.Utils.getScaleAnimator
 import io.github.dot166.nightstand.Utils.removePeriodicCallback
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlin.math.min
 
@@ -67,6 +72,7 @@ class MoveScreensaverRunnable(
 
     private val mCalendarModel: CalendarModel = CalendarModel(stand)
     val prefs by nightStandPreferenceStore
+    private val clockColorRefresh = MutableStateFlow(0)
 
     /**
      * Start or restart the random movement of the saver view within the content view.
@@ -90,41 +96,64 @@ class MoveScreensaverRunnable(
         mSaverView.findViewById<ComposeView>(R.id.compose).setContentCompat {
             val events by mCalendarModel.events.collectAsStateWithLifecycle()
             val mediaInfo by mediaFlow.collectAsStateWithLifecycle(null)
+            val nightModeEnabled by prefs.nightMode.screensaverNightMode.asFlow()
+                .collectAsStateWithLifecycle()
+            val nightModeDnd by prefs.nightMode.screensaverNightModeDnd.asFlow()
+                .collectAsStateWithLifecycle()
+            val dayColor by prefs.clock.screensaverClockColor.asFlow()
+                .collectAsStateWithLifecycle()
+            val nightColor by prefs.nightMode.screensaverClockNightModeColor.asFlow()
+                .collectAsStateWithLifecycle()
+            val brightness by prefs.nightMode.screensaverNightModeBrightness.asFlow()
+                .collectAsStateWithLifecycle()
+            val colorRefresh by clockColorRefresh.collectAsStateWithLifecycle()
+            val contentColor = remember(
+                nightModeEnabled,
+                nightModeDnd,
+                dayColor,
+                nightColor,
+                brightness,
+                colorRefresh,
+            ) {
+                Color(Utils.getClockColorFilter(nightModeEnabled, mSaverView).toColorInt())
+            }
             JLibAppTheme {
-                Column {
-                    if (events.isEmpty()) {
-                        Text(
-                            text = stringResource(R.string.no_events_found_in_android_system)
-                        )
-                    } else {
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(events, key = { it.id }) { event ->
-                                Text(event.toString())
+                CompositionLocalProvider(LocalContentColor provides contentColor) {
+                    Column {
+                        if (events.isEmpty()) {
+                            Text(
+                                text = stringResource(R.string.no_events_found_in_android_system)
+                            )
+                        } else {
+                            LazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(events, key = { it.id }) { event ->
+                                    Text(event.toString())
+                                }
                             }
                         }
-                    }
 
-                    mediaInfo?.let { info ->
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            val ctx = LocalContext.current
-                            val iconBitmap = remember(info.icon) {
-                                info.icon.loadDrawable(ctx)?.toBitmap()?.asImageBitmap()
-                            }
-                            if (iconBitmap != null) {
-                                ComposeIcon(
-                                    bitmap = iconBitmap,
-                                    contentDescription = null,
+                        mediaInfo?.let { info ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                val ctx = LocalContext.current
+                                val iconBitmap = remember(info.icon) {
+                                    info.icon.loadDrawable(ctx)?.toBitmap()?.asImageBitmap()
+                                }
+                                if (iconBitmap != null) {
+                                    ComposeIcon(
+                                        bitmap = iconBitmap,
+                                        contentDescription = null,
+                                    )
+                                }
+                                Text(
+                                    text = info.title.toString()
                                 )
                             }
                             Text(
-                                text = info.title.toString()
+                                text = info.subtitle.toString()
                             )
                         }
-                        Text(
-                            text = info.subtitle.toString()
-                        )
                     }
                 }
             }
@@ -185,6 +214,12 @@ class MoveScreensaverRunnable(
         mCalendarModel.stopPolling()
     }
 
+    private fun dimClockViews(dim: Boolean) {
+        dimClockView(dim, mSaverView.findViewById(R.id.digital_clock))
+        dimClockView(dim, mSaverView.findViewById(R.id.date_container))
+        clockColorRefresh.value++
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     override fun run() {
         enforceMainLooper()
@@ -209,7 +244,7 @@ class MoveScreensaverRunnable(
             mActiveAnimator!!.addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationStart(animation: Animator) {
                     // Re-dim the display in case DnD has been enabled and we're following it.
-                    dimClockView(prefs.nightMode.screensaverNightMode.get(), mSaverView)
+                    dimClockViews(prefs.nightMode.screensaverNightMode.get())
                 }
             })
         } else {
@@ -239,7 +274,7 @@ class MoveScreensaverRunnable(
                     mSaverView.x = newX
                     mSaverView.y = newY
                     // Re-dim the display in case DnD has been enabled and we're following it.
-                    dimClockView(prefs.nightMode.screensaverNightMode.get(), mSaverView)
+                    dimClockViews(prefs.nightMode.screensaverNightMode.get())
                 }
             })
 
