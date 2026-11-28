@@ -68,5 +68,6 @@ android {
 dependencies {
     implementation(libs.constraintlayout) // tmp until compose rewrite is done
     implementation(libs.jLib)
+    implementation(libs.lifecycle.runtime.compose)
     ksp(libs.patrickgold.jetpref.datastore.model.processor)
 }

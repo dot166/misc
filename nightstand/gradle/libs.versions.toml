@@ -5,11 +5,13 @@ jLib = "105.0.0"
 ksp = "2.3.11"
 patrickgold-jetpref = "0.5.0-beta01"
 constraintlayout = "2.2.2"
+lifecycleRuntimeCompose = "2.11.1"
 
 [libraries]
 jLib = { group = "io.github.dot166", name = "j-Lib", version.ref = "jLib" }
 patrickgold-jetpref-datastore-model-processor = { module = "dev.patrickgold.jetpref:jetpref-datastore-model-processor", version.ref = "patrickgold-jetpref" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

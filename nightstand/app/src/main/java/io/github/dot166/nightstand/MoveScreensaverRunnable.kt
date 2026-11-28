@@ -4,30 +4,30 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.annotation.SuppressLint
-import android.content.ComponentName
-import android.content.Context
-import android.graphics.PorterDuff
-import android.graphics.drawable.AdaptiveIconDrawable
-import android.media.MediaMetadata
-import android.media.session.MediaController
-import android.media.session.MediaSessionManager
-import android.media.session.PlaybackState
-import android.os.Build
+import android.graphics.drawable.Icon
 import android.view.View
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.Interpolator
-import android.widget.TextView
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Icon as ComposeIcon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
-import androidx.core.graphics.drawable.DrawableCompat
+import androidx.compose.ui.unit.dp
+import androidx.core.graphics.drawable.toBitmap
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
@@ -38,6 +38,8 @@ import io.github.dot166.nightstand.Utils.enforceMainLooper
 import io.github.dot166.nightstand.Utils.getAlphaAnimator
 import io.github.dot166.nightstand.Utils.getScaleAnimator
 import io.github.dot166.nightstand.Utils.removePeriodicCallback
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
 import kotlin.math.min
 
 /**
@@ -53,7 +55,6 @@ class MoveScreensaverRunnable(
     private val mSaverView: View,
     private val stand: NightStand
 ) : Runnable {
-    private val mMusicView: View = mSaverView.findViewById(R.id.music_holder)
 
     /** Accelerate the hide animation.  */
     private val mAcceleration: Interpolator = AccelerateInterpolator()
@@ -64,12 +65,7 @@ class MoveScreensaverRunnable(
     /** Tracks the currently executing animation if any; used to gracefully stop the animation.  */
     private var mActiveAnimator: Animator? = null
 
-    private val mCalendarModel: CalendarModel = CalendarModel(mContentView.context)
-
-    private lateinit var mediaCallback: MediaController.Callback
-
-    private var currentController: MediaController? = null
-    var mIsPlaying = false
+    private val mCalendarModel: CalendarModel = CalendarModel(stand)
     val prefs by nightStandPreferenceStore
 
     /**
@@ -80,64 +76,85 @@ class MoveScreensaverRunnable(
         // Stop any existing animations or callbacks.
         stop()
 
-        mediaCallback = object : MediaController.Callback() {
-            override fun onMetadataChanged(metadata: MediaMetadata?) {
-                updateMetadata(metadata)
-            }
-
-            override fun onPlaybackStateChanged(state: PlaybackState?) {
-                mIsPlaying = state!!.state == PlaybackState.STATE_PLAYING
-            }
-        }
-
         // Reset the alpha to 0 so saver view will be randomly positioned within the new bounds.
         mSaverView.setAlpha(0f)
 
         mCalendarModel.startPolling()
-        mSaverView.findViewById<ComposeView>(R.id.calendar_events).setContentCompat {
-            val events by mCalendarModel.events.collectAsState()
+        val mediaFlow = callbackFlow {
+            val mediaListener = MediaListener(stand) {
+                trySend(getMediaInfo(it))
+            }
+            mediaListener.onResume()
+            awaitClose { mediaListener.onPause() }
+        }
+        mSaverView.findViewById<ComposeView>(R.id.compose).setContentCompat {
+            val events by mCalendarModel.events.collectAsStateWithLifecycle()
+            val mediaInfo by mediaFlow.collectAsStateWithLifecycle(null)
             JLibAppTheme {
-                if (events.isEmpty()) {
-                    Text(stringResource((R.string.no_events_found_in_android_system)))
-                }
-                LazyColumn {
-                    items(events) {
-                        Text(it.toString())
+                Column {
+                    if (events.isEmpty()) {
+                        Text(
+                            text = stringResource(R.string.no_events_found_in_android_system)
+                        )
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(events, key = { it.id }) { event ->
+                                Text(event.toString())
+                            }
+                        }
+                    }
+
+                    mediaInfo?.let { info ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            val ctx = LocalContext.current
+                            val iconBitmap = remember(info.icon) {
+                                info.icon.loadDrawable(ctx)?.toBitmap()?.asImageBitmap()
+                            }
+                            if (iconBitmap != null) {
+                                ComposeIcon(
+                                    bitmap = iconBitmap,
+                                    contentDescription = null,
+                                )
+                            }
+                            Text(
+                                text = info.title.toString()
+                            )
+                        }
+                        Text(
+                            text = info.subtitle.toString()
+                        )
                     }
                 }
             }
         }
-
-        val mediaSessionManager =
-            mContentView.context.getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
-
-        val componentName = ComponentName(mContentView.context, NightStandNotificationListener::class.java)
-
-        val controllers = mediaSessionManager.getActiveSessions(componentName)
-
-        val playing = controllers.firstOrNull {
-            it.playbackState?.state == PlaybackState.STATE_PLAYING
-        }
-
-        if (playing != null) {
-            mIsPlaying = true
-            currentController = playing
-            updateMetadata(playing.metadata)
-            playing.registerCallback(mediaCallback)
-        }
-
-        mediaSessionManager.addOnActiveSessionsChangedListener(
-            { controllers ->
-                handleControllersChanged(controllers)
-            },
-            componentName
-        )
 
         // Execute the position updater runnable to choose the first random position of saver view.
         run()
 
         // Schedule callbacks every minute to adjust the position of mSaverView.
         addMinuteCallback(this, -FADE_TIME)
+    }
+
+    data class MediaInfo(val title: CharSequence, val subtitle: CharSequence, val icon: Icon)
+
+    fun getMediaInfo(media: MediaListener): MediaInfo? {
+        val tracking = media.tracking ?: return null
+        val title = tracking.info.title ?: return null
+
+        val sbn = tracking.sbn
+        val icon = sbn.notification.smallIcon ?: Icon.createWithResource(stand, R.drawable.ic_music_note)
+
+        val mediaInfo = tracking.info
+        val subtitle = mediaInfo.artist?.takeIf { it.isNotEmpty() }
+            ?: sbn?.getAppName(stand)
+            ?: stand.getAppName(tracking.packageName)
+        return MediaInfo(
+            icon = icon,
+            title = title,
+            subtitle = subtitle,
+        )
     }
 
     // tmp function for interop
@@ -152,91 +169,6 @@ class MoveScreensaverRunnable(
 
         // Set content composable
         setContent(content)
-    }
-
-    private fun handleControllersChanged(controllers: List<MediaController>?) {
-        val playing = controllers!!.firstOrNull {
-            it.playbackState?.state == PlaybackState.STATE_PLAYING
-        }
-
-        if (playing != currentController) {
-            if (currentController != null) {
-                currentController?.unregisterCallback(mediaCallback)
-            }
-            currentController = playing
-            currentController?.registerCallback(mediaCallback)
-            mIsPlaying = if (currentController!!.playbackState != null) {
-                currentController!!.playbackState!!.state == PlaybackState.STATE_PLAYING
-            } else {
-                // assume not playing
-                false
-            }
-            updateMetadata(playing?.metadata)
-        }
-    }
-
-    fun updateMetadata(metadata: MediaMetadata?) {
-        val title = metadata?.getString(MediaMetadata.METADATA_KEY_TITLE)
-        val artist = metadata?.getString(MediaMetadata.METADATA_KEY_ARTIST)
-
-        val titleView = mMusicView.findViewById<TextView>(R.id.song_title)
-        val artistView = mMusicView.findViewById<TextView>(R.id.song_artist)
-
-        titleView.text = title
-        artistView.text = artist
-
-        if (currentController?.packageName != null) {
-            applyMonochromeAppIcon(titleView, currentController!!.packageName)
-        }
-    }
-
-    private fun applyMonochromeAppIcon(titleView: TextView, packageName: String) {
-        val context = titleView.context
-        val pm = context.packageManager
-
-        try {
-            val rawIcon = pm.getApplicationIcon(packageName)
-
-            // Extract the best possible layer
-            val icon = when {
-                Build.VERSION.SDK_INT >= 33 &&
-                        rawIcon is AdaptiveIconDrawable &&
-                        rawIcon.monochrome != null -> {
-                    rawIcon.monochrome!!.mutate()
-                }
-
-                rawIcon is AdaptiveIconDrawable -> {
-                    rawIcon.foreground.mutate()
-                }
-
-                else -> {
-                    rawIcon.mutate()
-                }
-            }
-
-            // Wrap to ensure safe tinting
-            val wrapped = DrawableCompat.wrap(icon)
-
-            // Tint to match text color
-            DrawableCompat.setTint(wrapped, titleView.currentTextColor)
-            DrawableCompat.setTintMode(wrapped, PorterDuff.Mode.SRC_IN)
-
-            // Resize to match line height
-            val size = titleView.lineHeight
-            wrapped.setBounds(0, 0, size, size)
-
-            titleView.setCompoundDrawablesRelative(
-                wrapped,
-                null,
-                null,
-                null
-            )
-
-        } catch (e: Exception) {
-            // Fallback: clear icon if anything goes wrong
-            e.printStackTrace() // we cant use ErrorUtils here as the dialog would close the screensaver
-            titleView.setCompoundDrawablesRelative(null, null, null, null)
-        }
     }
 
     /**
@@ -256,11 +188,6 @@ class MoveScreensaverRunnable(
     @SuppressLint("NotifyDataSetChanged")
     override fun run() {
         enforceMainLooper()
-        if (mIsPlaying) {
-            mMusicView.visibility = View.VISIBLE
-        } else {
-            mMusicView.visibility = View.GONE
-        }
 
         val selectInitialPosition = mSaverView.alpha == 0f
         if (selectInitialPosition) {

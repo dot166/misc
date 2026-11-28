@@ -64,31 +64,9 @@
                 tools:text="Mo., 07:00"/>
         </LinearLayout>
         <androidx.compose.ui.platform.ComposeView
-            android:id="@+id/calendar_events"
+            android:id="@+id/compose"
             app:layout_constraintTop_toBottomOf="@id/date_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
-        <LinearLayout
-            app:layout_constraintTop_toBottomOf="@id/calendar_events"
-            app:layout_constraintStart_toStartOf="parent"
-            android:id="@+id/music_holder"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:gravity="center"
-            android:orientation="vertical">
-            <TextView
-                android:id="@+id/song_title"
-                style="@style/body"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="ローリンガール"/>
-            <TextView
-                android:id="@+id/song_artist"
-                style="@style/body"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="wowaka feat. 初音ミク"/>
-        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </io.github.dot166.nightstand.ComposeFixLayout>

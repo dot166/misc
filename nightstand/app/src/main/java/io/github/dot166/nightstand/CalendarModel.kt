@@ -31,7 +31,7 @@ class CalendarModel(val ctx: Context) {
         }
     }
 
-    data class Event(val title: String, val start: Long, val end: Long, val allDay: Boolean, val ctx: Context) {
+    data class Event(val id: Long, val title: String, val start: Long, val end: Long, val allDay: Boolean, val ctx: Context) {
         override fun toString(): String {
             val cal = Calendar.getInstance().apply {
                 timeInMillis = start
@@ -68,6 +68,7 @@ class CalendarModel(val ctx: Context) {
             }
             .build()
         val projection = arrayOf<String?>(
+            CalendarContract.Calendars._ID,
             CalendarContract.Instances.TITLE,
             CalendarContract.Instances.BEGIN,
             CalendarContract.Instances.END,
@@ -88,11 +89,12 @@ class CalendarModel(val ctx: Context) {
         if (c != null) {
             for (i in 0 until min(c.count, 5)) {
                 c.moveToPosition(i)
-                val title = c.getString(0)
-                val start = c.getLong(1)
-                val end = c.getLong(2)
-                val allDay = c.getInt(3) != 0
-                list.add(Event(title, start, end, allDay, ctx))
+                val id = c.getLong(0)
+                val title = c.getString(1)
+                val start = c.getLong(2)
+                val end = c.getLong(3)
+                val allDay = c.getInt(4) != 0
+                list.add(Event(id, title, start, end, allDay, ctx))
             }
         }
         c?.close()
